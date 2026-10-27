@@ -47,9 +47,6 @@ env:
   R2_BUCKET: ${{ secrets.R2_BUCKET }}
   AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: auto
-  AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
-  AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   HAS_R2: ${{ secrets.R2_BUCKET != '' && 'true' || 'false' }}
   HAS_DRIVE: ${{ secrets.RCLONE_CONF != '' && 'true' || 'false' }}
   RANGE_ARG: ${{ inputs.range != '' && format('--range {0}', inputs.range) || '' }}
@@ -79,21 +76,21 @@ jobs:
     needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 300
+    # Official Playwright image: Chromium and its system libraries come
+    # preinstalled (keep the tag equal to the playwright version in package.json).
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
     strategy:
       fail-fast: false
       max-parallel: 20
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
       - name: Install
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          apt-get update -qq && apt-get install -y -qq --no-install-recommends ffmpeg
           npm ci
-          npx playwright install --with-deps chromium
       - run: npm run build
       - name: Render shard ${{ matrix.shard }}
         run: >
@@ -102,10 +99,7 @@ jobs:
           --shard ${{ matrix.shard }} --workers 3 --chunks-dir out/chunks $RANGE_ARG
       - name: Upload chunks to R2
         if: env.HAS_R2 == 'true'
-        run: >
-          aws s3 cp out/chunks "s3://$R2_BUCKET/runs/${{ github.run_id }}/${{ matrix.format }}/"
-          --recursive --exclude "*" --include "c-*.mp4" --exclude "*.part.mp4"
-          --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" --only-show-errors
+        run: node tools/r2.mjs put out/chunks "runs/${{ github.run_id }}/${{ matrix.format }}"
       - name: Keep chunks as artifact
         if: env.HAS_R2 != 'true'
         uses: actions/upload-artifact@v4
@@ -126,12 +120,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          cache: npm
+      - name: Install
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg
+          npm ci --ignore-scripts
       - name: Fetch chunks from R2
         if: env.HAS_R2 == 'true'
-        run: >
-          aws s3 cp "s3://$R2_BUCKET/runs/${{ github.run_id }}/${{ matrix.format }}/" out/chunks
-          --recursive --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" --only-show-errors
+        run: node tools/r2.mjs get "runs/${{ github.run_id }}/${{ matrix.format }}/" out/chunks
       - name: Fetch chunks from artifacts
         if: env.HAS_R2 != 'true'
         uses: actions/download-artifact@v4
@@ -153,11 +149,10 @@ jobs:
       - name: Upload video to R2
         if: env.HAS_R2 == 'true'
         run: |
-          ep="https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com"
           key="renders/${{ inputs.track }}/${{ steps.merge.outputs.name }}"
-          aws s3 cp "${{ steps.merge.outputs.file }}" "s3://$R2_BUCKET/$key" --endpoint-url "$ep" --only-show-errors
-          aws s3 rm "s3://$R2_BUCKET/runs/${{ github.run_id }}/${{ matrix.format }}/" --recursive --endpoint-url "$ep" --only-show-errors
-          link=$(aws s3 presign "s3://$R2_BUCKET/$key" --expires-in 604800 --endpoint-url "$ep")
+          node tools/r2.mjs put "${{ steps.merge.outputs.file }}" "$key"
+          node tools/r2.mjs rm "runs/${{ github.run_id }}/${{ matrix.format }}/"
+          link=$(node tools/r2.mjs presign "$key" 604800)
           echo "R2: \`$key\` · [download (7 days)]($link)" >> "$GITHUB_STEP_SUMMARY"
       - name: Copy video to Google Drive
         if: env.HAS_DRIVE == 'true'

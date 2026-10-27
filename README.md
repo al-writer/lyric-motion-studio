@@ -103,3 +103,6 @@ where it stopped.
   vector-sharp.
 - `tools/merge.mjs`: checks that the chunks cover the whole range and joins
   them with the audio.
+- `tools/r2.mjs`: tiny R2 client (upload, download, delete, presigned
+  link) used by the workflow; works locally with the same environment
+  variables.
