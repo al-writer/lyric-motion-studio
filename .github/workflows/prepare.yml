@@ -44,7 +44,8 @@ jobs:
           if [ -n "$INPUT_TRACK" ]; then
             tracks="$INPUT_TRACK"
           else
-            tracks=$(git diff --name-only HEAD~1 HEAD -- tracks | cut -d/ -f2 | sort -u | tr '\n' ' ')
+            # --root also lists the files of a repository's first commit
+            tracks=$(git diff-tree --no-commit-id --name-only -r --root HEAD -- tracks | cut -d/ -f2 | sort -u | tr '\n' ' ')
           fi
           echo "tracks=$tracks" >> "$GITHUB_OUTPUT"
           echo "Tracks: $tracks"
