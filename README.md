@@ -65,6 +65,12 @@ set `"timing": "lrc"`.
 Each format is split over up to 20 machines that render in parallel; a merge
 job joins the pieces with the audio.
 
+All jobs run in one Docker image (`docker/render.Dockerfile`: the official
+Playwright image plus ffmpeg, git and Python from Ubuntu), published to
+`ghcr.io/al-writer/lyric-motion-studio/render` by the *Build render image*
+workflow. It rebuilds on its own when the Dockerfile or the Playwright
+version changes and once a month; npm, pip and Whisper downloads are cached.
+
 Where the video goes:
 
 - **Cloudflare R2** (recommended). Repository secrets `R2_ACCOUNT_ID`,

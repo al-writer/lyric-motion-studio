@@ -1,0 +1,41 @@
+name: Build render image
+
+# Builds docker/render.Dockerfile and publishes it to GitHub Container
+# Registry as ghcr.io/<owner>/<repo>/render. The other workflows run their
+# jobs in this image. Rebuilt when the Dockerfile or the Playwright version
+# changes, monthly for Ubuntu security updates, or by hand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - docker/**
+      - package-lock.json
+      - .github/workflows/image.yml
+  schedule:
+    - cron: '17 4 3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Playwright versions match
+        run: |
+          npm_pw=$(node -p "require('./package-lock.json').packages['node_modules/playwright'].version")
+          grep -q "playwright:v$npm_pw-" docker/render.Dockerfile \
+            || { echo "::error::docker/render.Dockerfile must use the playwright:v$npm_pw image"; exit 1; }
+          echo "PW=$npm_pw" >> "$GITHUB_ENV"
+      - name: Build and push
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/render
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -f docker/render.Dockerfile -t "$IMAGE:latest" -t "$IMAGE:pw-$PW" docker
+          docker run --rm "$IMAGE:latest" sh -c 'ffmpeg -hide_banner -encoders | grep -q libx265 && python3 --version && git --version'
+          docker push --all-tags "$IMAGE"

@@ -7,6 +7,9 @@ analysis into `build/`) → `engine/` (React + Framer Motion player) →
 ffmpeg, resumable chunks) → `tools/merge.mjs`. GitHub workflows:
 `prepare.yml` (on push to a track, commits `build/`) and `render.yml`
 (manual, sharded over up to 20 runners, output to R2 / Drive / artifact).
+Jobs run in `ghcr.io/<repo>/render` built by `image.yml` from
+`docker/render.Dockerfile`; bump its Playwright tag together with the
+`playwright` npm version (image.yml fails the build if they differ).
 
 ## Rules that keep renders correct
 
