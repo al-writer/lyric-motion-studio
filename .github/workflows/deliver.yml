@@ -1,0 +1,54 @@
+name: Deliver video
+
+# Puts finished videos into a draft GitHub release: plain .mp4 files (no zip),
+# served from GitHub's CDN with resumable downloads, visible only to people
+# with write access until published. Runs after every successful render that
+# kept its videos as artifacts (no R2 / Drive), or by hand for an older run.
+on:
+  workflow_run:
+    workflows: [Render video]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: ID of a "Render video" run (the number in its URL)
+        required: true
+
+permissions:
+  contents: write # create the draft release
+  actions: read # read the render run's artifacts
+
+jobs:
+  deliver:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      RUN_ID: ${{ inputs.run_id || github.event.workflow_run.id }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Find videos
+        id: find
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name | endswith(".mp4")) | select(.expired | not) | .name' > names.txt
+          cat names.txt
+          echo "count=$(wc -l < names.txt)" >> "$GITHUB_OUTPUT"
+      - name: Download
+        if: steps.find.outputs.count != '0'
+        run: |
+          mkdir videos
+          while read -r name; do
+            gh run download "$RUN_ID" -R "${{ github.repository }}" -n "$name" -D videos
+          done < names.txt
+          ls -la videos
+      - name: Create draft release
+        if: steps.find.outputs.count != '0'
+        run: |
+          track=$(ls videos | head -1 | sed -E 's/-(wide|vertical)-.*//')
+          notes="Rendered by https://github.com/${{ github.repository }}/actions/runs/$RUN_ID
+
+          Draft: only people with write access can see it. Delete it once the files are downloaded."
+          gh release create "render-$RUN_ID" videos/*.mp4 -R "${{ github.repository }}" \
+            --draft --title "$track · render $RUN_ID" --notes "$notes"
+          url=$(gh release view "render-$RUN_ID" -R "${{ github.repository }}" --json url --jq .url)
+          echo "### Draft release: $url" >> "$GITHUB_STEP_SUMMARY"

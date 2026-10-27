@@ -80,7 +80,10 @@ Where the video goes:
 - **Google Drive**. Secret `RCLONE_CONF` holding an rclone config with a
   remote named `gdrive`; optional repository variable `DRIVE_DEST`
   (default `gdrive:Lyric Motion Studio`).
-- Neither: the video is a workflow artifact, kept for 1 day.
+- Neither: the *Deliver video* workflow puts the videos into a **draft
+  release** as plain `.mp4` files (resumable downloads, visible only to people
+  with write access). Delete the draft after downloading. It can also be run
+  by hand with the ID of an older render run.
 
 **Locally.** Needs Node 20+, Python 3.10+ and ffmpeg.
 
