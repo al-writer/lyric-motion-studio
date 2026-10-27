@@ -1,2 +1,4 @@
 faster-whisper==1.1.0
 numpy>=1.26
+# faster-whisper imports requests, but newer huggingface_hub no longer pulls it in
+requests>=2.31
