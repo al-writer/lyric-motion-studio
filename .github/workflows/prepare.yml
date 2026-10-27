@@ -1,0 +1,88 @@
+name: Prepare track
+
+# Times every word on the actual vocal (Whisper) and analyses the audio, then
+# commits tracks/<slug>/build/ back. Runs on its own when a track's audio or
+# lyrics change; can also be started by hand for one track.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tracks/*/song.*'
+      - 'tracks/*/lyrics.*'
+      - 'tracks/*/scene.json'
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Track folder under tracks/
+        required: true
+      timing:
+        description: whisper = place words on the vocal; lrc = trust the LRC timestamps
+        type: choice
+        options: [scene, whisper, lrc]
+        default: scene
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prepare-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Pick tracks
+        id: pick
+        env:
+          INPUT_TRACK: ${{ inputs.track }}
+        run: |
+          if [ -n "$INPUT_TRACK" ]; then
+            tracks="$INPUT_TRACK"
+          else
+            tracks=$(git diff --name-only HEAD~1 HEAD -- tracks | cut -d/ -f2 | sort -u | tr '\n' ' ')
+          fi
+          echo "tracks=$tracks" >> "$GITHUB_OUTPUT"
+          echo "Tracks: $tracks"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -r requirements.txt
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-models-v1
+
+      - name: Prepare
+        env:
+          TRACKS: ${{ steps.pick.outputs.tracks }}
+          TIMING: ${{ inputs.timing }}
+        run: |
+          for t in $TRACKS; do
+            [ -f "tracks/$t/scene.json" ] || { echo "skip $t (no scene.json)"; continue; }
+            if [ -n "$TIMING" ] && [ "$TIMING" != scene ]; then
+              python3 tools/prepare.py "$t" --timing "$TIMING"
+            else
+              python3 tools/prepare.py "$t"
+            fi
+          done
+
+      - name: Commit build files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tracks/*/build
+          git diff --cached --quiet && { echo "nothing changed"; exit 0; }
+          git commit -m "Prepare: ${{ steps.pick.outputs.tracks }}"
+          git push

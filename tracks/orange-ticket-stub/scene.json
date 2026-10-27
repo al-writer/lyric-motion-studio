@@ -1,0 +1,12 @@
+{
+  "title": "Orange Ticket Stub",
+  "artist": "qubit_quill",
+  "language": "en",
+  "layout": "wheel",
+  "hero": { "type": "component", "file": "Ticket.jsx", "size": [900, 450] },
+  "colors": { "text": "#f7ead9", "accent": "#ff8a2a", "accentSoft": "#ffb470" },
+  "emphasis": ["^orange ticket stub$"],
+  "pop": ["^hold me up"],
+  "italicSections": ["bridge"],
+  "reactive": { "dots": true, "glow": true, "tilt": true, "motes": true, "spectrum": true, "rings": ["chorus"] }
+}

@@ -1,0 +1,179 @@
+name: Render video
+
+# Renders one track on many machines at once: every shard renders its share
+# of chunks, then a merge job joins them with the audio. With R2 configured
+# (secrets R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET)
+# chunks and the final video go through the private bucket and nothing is
+# published on GitHub; a Google Drive copy is added when RCLONE_CONF is set.
+# Without either, the video is kept as a workflow artifact for 1 day.
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Track folder under tracks/
+        required: true
+      formats:
+        description: Aspect ratio
+        type: choice
+        options: [wide, vertical, wide+vertical]
+        default: wide
+      res:
+        description: Resolution
+        type: choice
+        options: [4k, 1080p]
+        default: 4k
+      fps:
+        description: Frames per second
+        type: choice
+        options: ['60', '30']
+        default: '60'
+      quality:
+        description: master = HEVC 10-bit · compat = H.264 high bitrate · draft = fast preview
+        type: choice
+        options: [master, compat, draft]
+        default: master
+      range:
+        description: Only part of the song, in seconds, e.g. 48,92 (empty = whole song)
+        required: false
+      shards:
+        description: Machines per format (max 20 run at once on a free account)
+        default: '20'
+
+permissions:
+  contents: read
+
+env:
+  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: auto
+  AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+  AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
+  HAS_R2: ${{ secrets.R2_BUCKET != '' && 'true' || 'false' }}
+  HAS_DRIVE: ${{ secrets.RCLONE_CONF != '' && 'true' || 'false' }}
+  RANGE_ARG: ${{ inputs.range != '' && format('--range {0}', inputs.range) || '' }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      formats: ${{ steps.plan.outputs.formats }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - id: plan
+        env:
+          TRACK: ${{ inputs.track }}
+          FORMATS: ${{ inputs.formats }}
+          SHARDS: ${{ inputs.shards }}
+        run: |
+          formats=${FORMATS//+/,}
+          echo "matrix=$(node tools/plan.mjs --track "$TRACK" --formats "$formats" --shards "$SHARDS")" >> "$GITHUB_OUTPUT"
+          echo "formats=$(node -e "console.log(JSON.stringify(process.argv[1].split(',')))" "$formats")" >> "$GITHUB_OUTPUT"
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          npm ci
+          npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Render shard ${{ matrix.shard }}
+        run: >
+          node tools/render.mjs --track "${{ inputs.track }}" --format ${{ matrix.format }}
+          --res ${{ inputs.res }} --fps ${{ inputs.fps }} --quality ${{ inputs.quality }}
+          --shard ${{ matrix.shard }} --workers 3 --chunks-dir out/chunks $RANGE_ARG
+      - name: Upload chunks to R2
+        if: env.HAS_R2 == 'true'
+        run: >
+          aws s3 cp out/chunks "s3://$R2_BUCKET/runs/${{ github.run_id }}/${{ matrix.format }}/"
+          --recursive --exclude "*" --include "c-*.mp4" --exclude "*.part.mp4"
+          --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" --only-show-errors
+      - name: Keep chunks as artifact
+        if: env.HAS_R2 != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chunks-${{ matrix.format }}-${{ strategy.job-index }}
+          path: out/chunks/c-*.mp4
+          retention-days: 1
+          if-no-files-found: ignore
+
+  merge:
+    needs: [plan, render]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        format: ${{ fromJSON(needs.plan.outputs.formats) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Fetch chunks from R2
+        if: env.HAS_R2 == 'true'
+        run: >
+          aws s3 cp "s3://$R2_BUCKET/runs/${{ github.run_id }}/${{ matrix.format }}/" out/chunks
+          --recursive --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" --only-show-errors
+      - name: Fetch chunks from artifacts
+        if: env.HAS_R2 != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: chunks-${{ matrix.format }}-*
+          path: out/chunks
+          merge-multiple: true
+      - name: Merge
+        id: merge
+        run: |
+          node tools/merge.mjs --track "${{ inputs.track }}" --format ${{ matrix.format }} \
+            --res ${{ inputs.res }} --fps ${{ inputs.fps }} --quality ${{ inputs.quality }} \
+            --chunks-dir out/chunks $RANGE_ARG
+          file=$(ls out/*.mp4)
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$file")" >> "$GITHUB_OUTPUT"
+          echo "### ${{ inputs.track }} · ${{ matrix.format }} · ${{ inputs.res }}${{ inputs.fps }} · ${{ inputs.quality }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "$(du -h "$file" | cut -f1), $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$file")s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload video to R2
+        if: env.HAS_R2 == 'true'
+        run: |
+          ep="https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com"
+          key="renders/${{ inputs.track }}/${{ steps.merge.outputs.name }}"
+          aws s3 cp "${{ steps.merge.outputs.file }}" "s3://$R2_BUCKET/$key" --endpoint-url "$ep" --only-show-errors
+          aws s3 rm "s3://$R2_BUCKET/runs/${{ github.run_id }}/${{ matrix.format }}/" --recursive --endpoint-url "$ep" --only-show-errors
+          link=$(aws s3 presign "s3://$R2_BUCKET/$key" --expires-in 604800 --endpoint-url "$ep")
+          echo "R2: \`$key\` · [download (7 days)]($link)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Copy video to Google Drive
+        if: env.HAS_DRIVE == 'true'
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+          DRIVE_DEST: ${{ vars.DRIVE_DEST || 'gdrive:Lyric Motion Studio' }}
+        run: |
+          curl -fsSL https://rclone.org/install.sh | sudo bash > /dev/null
+          mkdir -p ~/.config/rclone && printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+          rclone copy "${{ steps.merge.outputs.file }}" "$DRIVE_DEST/${{ inputs.track }}/"
+          echo "Google Drive: \`$DRIVE_DEST/${{ inputs.track }}/${{ steps.merge.outputs.name }}\`" >> "$GITHUB_STEP_SUMMARY"
+      - name: Keep video as artifact (no R2 / Drive configured)
+        if: env.HAS_R2 != 'true' && env.HAS_DRIVE != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.merge.outputs.name }}
+          path: ${{ steps.merge.outputs.file }}
+          retention-days: 1
+          compression-level: 0
