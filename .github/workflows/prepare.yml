@@ -2,14 +2,14 @@ name: Prepare track
 
 # Times every word on the actual vocal (Whisper) and analyses the audio, then
 # commits tracks/<slug>/build/ back. Runs on its own when a track's audio or
-# lyrics change; can also be started by hand for one track.
+# lyrics change (not on scene.json edits, which would re-time every word for a
+# colour change); run it by hand after changing "language" or "timing".
 on:
   push:
     branches: [main]
     paths:
       - 'tracks/*/song.*'
       - 'tracks/*/lyrics.*'
-      - 'tracks/*/scene.json'
   workflow_dispatch:
     inputs:
       track:
