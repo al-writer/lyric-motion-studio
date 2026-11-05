@@ -24,6 +24,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     shards: 1,
     workers: Number(opt.workers ?? Math.max(1, Math.min(3, cpus().length - 1))),
     stills: opt.stills && opt.stills !== true ? opt.stills.split(',').map(Number) : null,
+    thumbnail: opt.thumbnail ? (opt.thumbnail === true ? 'hero,line,macro' : opt.thumbnail).split(',') : null,
     dist: opt.dist ?? 'dist',
     out: opt.out ?? 'out',
   }

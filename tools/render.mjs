@@ -3,7 +3,7 @@
 //
 //   node tools/render.mjs --track <slug> [--format wide|vertical] [--res 1080p|4k]
 //        [--fps 30|60] [--quality draft|master|compat] [--range 48,92]
-//        [--shard k/n] [--workers 3] [--stills 8,66]
+//        [--shard k/n] [--workers 3] [--stills 8,66] [--thumbnail hero,line,macro]
 //
 // Without --shard everything is rendered and merged into out/<name>.mp4.
 // With --shard k/n only every n-th chunk (offset k) is rendered and left in
@@ -88,7 +88,18 @@ async function renderChunk(page, c) {
 
 await mkdir(o.out, { recursive: true })
 
-if (o.stills) {
+if (o.thumbnail) {
+  // YouTube thumbnails: 1920x1080 JPEG (YouTube wants 16:9, under 2 MB)
+  for (const v of o.thumbnail) {
+    const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } })
+    await page.goto(`${url}&thumbnail=${v}`)
+    await page.waitForFunction(() => window.__ready === true, null, { timeout: 60_000 })
+    const path = `${o.out}/${o.track}-thumbnail-${v}.jpg`
+    await page.screenshot({ path, type: 'jpeg', quality: 92 })
+    await page.close()
+    console.log('thumbnail', path)
+  }
+} else if (o.stills) {
   const page = await openPage()
   for (const s of o.stills) {
     for (let t = Math.max(0, s - WARMUP); t < s; t += 1 / o.fps) await step(page, t)

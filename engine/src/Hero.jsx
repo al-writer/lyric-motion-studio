@@ -4,7 +4,7 @@ import { BassGlow, BeatRings } from './Reactive.jsx'
 
 // The central object: a track's own component (scene/<file>.jsx, drawn in a
 // 900x450 box) or, by default, the cover art embedded in the audio file.
-function Cover({ track }) {
+export function Cover({ track }) {
   return track.coverUrl ? (
     <img src={track.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 28, display: 'block' }} />
   ) : (
