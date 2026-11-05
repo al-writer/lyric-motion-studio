@@ -1,25 +1,25 @@
 1
-00:00:21,620 --> 00:00:24,950
+00:00:21,600 --> 00:00:24,990
 I found your orange ticket stub
 
 2
-00:00:25,000 --> 00:00:29,240
+00:00:25,040 --> 00:00:29,240
 In the pocket of my coat
 
 3
-00:00:32,800 --> 00:00:35,330
+00:00:32,800 --> 00:00:35,550
 Sixteen cents of arcade luck
 
 4
-00:00:35,380 --> 00:00:39,860
+00:00:35,600 --> 00:00:39,880
 And a fold mark by your thumb
 
 5
-00:00:42,380 --> 00:00:44,840
+00:00:42,380 --> 00:00:44,850
 You wrote a name on the back
 
 6
-00:00:44,890 --> 00:00:47,090
+00:00:44,900 --> 00:00:47,090
 In blue ink, leaning hard
 
 7
@@ -27,11 +27,11 @@ In blue ink, leaning hard
 Like you knew the gate would close
 
 8
-00:00:50,300 --> 00:00:52,810
+00:00:50,300 --> 00:00:52,930
 Before we left the yard
 
 9
-00:00:52,860 --> 00:00:55,090
+00:00:52,980 --> 00:00:55,090
 Now I spin it in my palm
 
 10
@@ -43,7 +43,7 @@ Like a tiny warning sign
 All that paper, all that time
 
 12
-00:00:57,740 --> 00:01:03,240
+00:00:57,740 --> 00:01:03,220
 Still humming in my mind
 
 13
@@ -55,15 +55,15 @@ Orange ticket stub
 Hold me up, hold me up, hold me up
 
 15
-00:01:07,320 --> 00:01:08,830
+00:01:07,320 --> 00:01:08,850
 hold me up, hold me up
 
 16
-00:01:08,880 --> 00:01:10,130
+00:01:08,900 --> 00:01:10,130
 Orange ticket stub
 
 17
-00:01:10,180 --> 00:01:13,100
+00:01:10,180 --> 00:01:13,120
 You were gone too fast
 
 18
@@ -75,19 +75,19 @@ Orange ticket stub
 Tell me what we had
 
 20
-00:01:18,920 --> 00:01:20,650
+00:01:18,920 --> 00:01:20,730
 Orange ticket stub
 
 21
-00:01:20,700 --> 00:01:24,560
+00:01:20,780 --> 00:01:24,560
 I keep the little things
 
 22
-00:01:34,960 --> 00:01:37,850
+00:01:34,960 --> 00:01:37,830
 The cotton candy bag was torn
 
 23
-00:01:37,900 --> 00:01:40,550
+00:01:37,880 --> 00:01:40,550
 On the bench by platform nine
 
 24
@@ -99,19 +99,19 @@ A gum wrapper, one green button
 And your laugh between the lines
 
 26
-00:01:45,780 --> 00:01:47,630
+00:01:45,780 --> 00:01:47,650
 The vendor called “last round”
 
 27
-00:01:47,680 --> 00:01:49,970
+00:01:47,700 --> 00:01:49,990
 We both heard “stay”
 
 28
-00:01:50,020 --> 00:01:52,650
+00:01:50,040 --> 00:01:52,670
 But the crowd pulled on your sleeve
 
 29
-00:01:52,700 --> 00:01:55,050
+00:01:52,720 --> 00:01:55,050
 And you slipped away
 
 30
@@ -131,11 +131,11 @@ All that paper, all that time
 Still humming in my mind
 
 34
-00:02:05,040 --> 00:02:06,610
+00:02:05,040 --> 00:02:06,590
 Orange ticket stub
 
 35
-00:02:06,660 --> 00:02:09,090
+00:02:06,640 --> 00:02:09,090
 Hold me up, hold me up, hold me up
 
 36
@@ -151,19 +151,19 @@ Orange ticket stub
 You were gone too fast
 
 39
-00:02:15,540 --> 00:02:17,030
+00:02:15,580 --> 00:02:17,050
 Orange ticket stub
 
 40
-00:02:17,080 --> 00:02:19,680
+00:02:17,100 --> 00:02:19,700
 Tell me what we had
 
 41
-00:02:20,280 --> 00:02:22,070
+00:02:20,280 --> 00:02:22,130
 Orange ticket stub
 
 42
-00:02:22,120 --> 00:02:26,010
+00:02:22,180 --> 00:02:26,010
 I keep the little things
 
 43
@@ -187,15 +187,15 @@ That you were really there
 I put it by my keys
 
 48
-00:02:40,000 --> 00:02:42,610
+00:02:40,000 --> 00:02:42,630
 By the door, by the chain
 
 49
-00:02:42,660 --> 00:02:45,070
+00:02:42,680 --> 00:02:45,050
 If I lose that little square
 
 50
-00:02:45,120 --> 00:02:50,880
+00:02:45,100 --> 00:02:50,880
 Do I lose your name?
 
 51
@@ -203,19 +203,19 @@ Do I lose your name?
 Orange ticket stub
 
 52
-00:02:57,880 --> 00:03:00,230
+00:02:57,880 --> 00:03:00,250
 Hold me up, hold me up, hold me up
 
 53
-00:03:00,280 --> 00:03:01,710
+00:03:00,300 --> 00:03:01,730
 hold me up, hold me up
 
 54
-00:03:01,760 --> 00:03:03,130
+00:03:01,780 --> 00:03:03,110
 Orange ticket stub
 
 55
-00:03:03,180 --> 00:03:06,380
+00:03:03,160 --> 00:03:06,320
 You were gone too fast
 
 56
@@ -231,19 +231,19 @@ Tell me what we had
 Orange ticket stub
 
 59
-00:03:13,400 --> 00:03:17,640
+00:03:13,400 --> 00:03:17,620
 I keep the little things
 
 60
-00:03:21,540 --> 00:03:23,610
+00:03:21,540 --> 00:03:23,590
 Orange ticket stub
 
 61
-00:03:23,660 --> 00:03:26,940
+00:03:23,640 --> 00:03:26,940
 Hold me up
 
 62
-00:03:26,990 --> 00:03:30,690
+00:03:26,990 --> 00:03:30,650
 Orange ticket stub
 
 63
