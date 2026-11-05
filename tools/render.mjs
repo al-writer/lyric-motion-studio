@@ -89,12 +89,13 @@ async function renderChunk(page, c) {
 await mkdir(o.out, { recursive: true })
 
 if (o.thumbnail) {
-  // YouTube thumbnails: 1920x1080 JPEG (YouTube wants 16:9, under 2 MB)
+  // YouTube thumbnails: 1920x1080 JPEG (YouTube wants 16:9, under 2 MB);
+  // --format vertical makes 1080x1920 Shorts covers ("line" and "hero")
   for (const v of o.thumbnail) {
-    const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } })
+    const page = await browser.newPage({ viewport: viewport(o) })
     await page.goto(`${url}&thumbnail=${v}`)
     await page.waitForFunction(() => window.__ready === true, null, { timeout: 60_000 })
-    const path = `${o.out}/${o.track}-thumbnail-${v}.jpg`
+    const path = `${o.out}/${o.track}-thumbnail-${o.format === 'vertical' ? 'vertical-' : ''}${v}.jpg`
     await page.screenshot({ path, type: 'jpeg', quality: 92 })
     await page.close()
     console.log('thumbnail', path)

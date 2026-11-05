@@ -1,8 +1,10 @@
 import { Cover } from './Hero.jsx'
 import { Background, Grain, Motes } from './Scenery.jsx'
 import { H, W } from './format.js'
+import { VERTICAL } from './params.js'
 
-// YouTube thumbnails (1920x1080, rendered by `tools/render.mjs --thumbnail`).
+// YouTube thumbnails (1920x1080, rendered by `tools/render.mjs --thumbnail`;
+// with --format vertical, 1080x1920 covers for Shorts, see VerticalVariant).
 // Three variants for YouTube's "Test & Compare":
 //   hero  - the hero object large, glowing, with a small "lyric video" label
 //   line  - one lyric line set big, the hero beside it
@@ -177,6 +179,65 @@ function MacroVariant({ track, tag }) {
   )
 }
 
+// 9:16 cover for Shorts. Everything sits in the upper two thirds: the Shorts
+// player covers the bottom with the title and channel, the right edge with
+// buttons. "line" sets the lyric line under the hero; "hero" stands the hero
+// upright and large.
+function VerticalVariant({ track, tag, line, highlight, withLine }) {
+  const { fonts, colors } = track.scene
+  const [w, h] = heroBox(track)
+  const words = line.split(' ')
+  if (!withLine)
+    return (
+      <>
+        <Glow x={520} y={980} size={1500} alpha={0.6} />
+        <Rings x={520} y={980} />
+        <div style={{ position: 'absolute', left: 520 - w / 2, top: 980 - h / 2, transform: `scale(${1250 / w}) rotate(-78deg)` }}>
+          <HeroArt track={track} w={w} h={h} />
+        </div>
+        <div style={{ position: 'absolute', left: 0, right: 60, top: 110, textAlign: 'center' }}>
+          <Tag track={track} style={{ fontSize: 40 }}>{tag}</Tag>
+          <Artist track={track} style={{ fontSize: 30, marginTop: 16 }} />
+        </div>
+      </>
+    )
+  return (
+    <>
+      <Glow x={520} y={560} size={1300} alpha={0.6} />
+      <div style={{ position: 'absolute', left: 520 - w / 2, top: 520 - h / 2, transform: `scale(${930 / w}) rotate(-8deg)` }}>
+        <HeroArt track={track} w={w} h={h} />
+      </div>
+      <div style={{ position: 'absolute', left: 60, right: 100, top: 880, textAlign: 'center' }}>
+        <Tag track={track} style={{ fontSize: 34, marginBottom: 30 }}>{tag}</Tag>
+        <div
+          style={{
+            fontFamily: `'${fonts.body}', serif`,
+            fontWeight: 600,
+            fontSize: 140,
+            lineHeight: 1.0,
+            letterSpacing: '-0.02em',
+            color: colors.text,
+            textWrap: 'balance',
+            textShadow: '0 6px 30px rgba(0,0,0,0.6)',
+          }}
+        >
+          {words.map((wd, i) => (
+            <span key={i}>
+              {i > 0 && ' '}
+              {wd.toLowerCase() === highlight?.toLowerCase() ? (
+                <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: '0 0 50px rgba(255,138,42,0.9)' }}>{wd}</span>
+              ) : (
+                wd
+              )}
+            </span>
+          ))}
+        </div>
+        <Artist track={track} style={{ fontSize: 30, marginTop: 40 }} />
+      </div>
+    </>
+  )
+}
+
 export default function Thumbnail({ track, variant }) {
   const cfg = { tag: 'Lyric video', line: track.scene.title, t: 66, ...track.scene.thumbnail }
   const t = cfg.t
@@ -184,7 +245,9 @@ export default function Thumbnail({ track, variant }) {
     <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', background: '#000' }}>
       <Background track={track} section="chorus" t={t} />
       <Motes track={track} t={t} />
-      {variant === 'line' ? (
+      {VERTICAL ? (
+        <VerticalVariant track={track} tag={cfg.tag} line={cfg.line} highlight={cfg.highlight} withLine={variant !== 'hero'} />
+      ) : variant === 'line' ? (
         <LineVariant track={track} tag={cfg.tag} line={cfg.line} highlight={cfg.highlight} />
       ) : variant === 'macro' ? (
         <MacroVariant track={track} tag={cfg.tag} />
