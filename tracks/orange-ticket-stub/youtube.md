@@ -5,9 +5,7 @@ Published 2026-11-05: https://youtu.be/8Iu6weR5WIo as
 
 ## Title
 
-qubit_quill – Orange Ticket Stub (Official Lyric Video)
-
-Alternative, shorter and closer to what people type: `qubit_quill – Orange Ticket Stub (Lyrics)`
+Qubit Quill – Orange Ticket Stub (Official Lyric Video)
 
 ## Thumbnail
 
@@ -20,7 +18,7 @@ watch time. Rebuild with `node tools/render.mjs --track orange-ticket-stub --thu
 Check the channel handle in the subscribe link before publishing.
 
 ```
-A ticket stub, a torn cotton candy bag, a gum wrapper, one green button: the little things you keep when someone slips away into the crowd. "Orange Ticket Stub" by qubit_quill, official lyric video.
+A ticket stub, a torn cotton candy bag, a gum wrapper, one green button: the little things you keep when someone slips away into the crowd. "Orange Ticket Stub" by Qubit Quill, official lyric video.
 
 🔔 Subscribe for new songs: https://www.youtube.com/@qubit_quill?sub_confirmation=1
 
@@ -118,7 +116,7 @@ Orange ticket stub
 I keep the little things
 
 🎧 Credits
-Song, lyrics and visuals: qubit_quill
+Song, lyrics and visuals: Qubit Quill
 Music produced with Suno (AI-assisted)
 Lyric video made with Lyric Motion Studio: https://github.com/al-writer/lyric-motion-studio
 
@@ -128,7 +126,7 @@ Lyric video made with Lyric Motion Studio: https://github.com/al-writer/lyric-mo
 ## Tags
 
 ```
-qubit_quill, qubit quill, orange ticket stub, orange ticket stub lyrics, orange ticket stub qubit_quill, lyric video, lyrics, indie pop, bedroom pop, nostalgic song, sad love song, keep the little things, breakup song, new music 2026
+Qubit Quill, qubit_quill, orange ticket stub, orange ticket stub lyrics, orange ticket stub qubit quill, lyric video, lyrics, indie pop, bedroom pop, nostalgic song, sad love song, keep the little things, breakup song, new music 2026
 ```
 
 ## Settings

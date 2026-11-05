@@ -26,9 +26,13 @@ export async function merge(o) {
   const song = ['mp3', 'wav', 'm4a', 'flac'].map((e) => `${dir}/song.${e}`).find(existsSync)
   await writeFile(`${o.chunksDir}/list.txt`, files.map((f) => `file '${f}'`).join('\n'))
   const out = `${o.out}/${o.name}.mp4`
+  // A clip cut from the middle of the song fades its audio in and out
+  // instead of starting and stopping mid-note.
+  const len = o.to - o.from
+  const fades = o.range ? ['-af', `afade=t=in:d=0.3,afade=t=out:st=${(len - 1.5).toFixed(2)}:d=1.5`] : []
   await run(['-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', `${o.chunksDir}/list.txt`,
     '-ss', String(o.from), '-t', String(o.to - o.from), '-i', song,
-    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '320k', '-ar', '48000',
+    '-map', '0:v', '-map', '1:a', '-c:v', 'copy', ...fades, '-c:a', 'aac', '-b:a', '320k', '-ar', '48000',
     '-shortest', '-movflags', '+faststart', out])
   console.log('done', out)
   return out
