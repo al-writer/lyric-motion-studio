@@ -2,6 +2,7 @@
 
 Published 2026-11-05: https://youtu.be/8Iu6weR5WIo as
 "Qubit Quill – Orange Ticket Stub (Official Lyric Video)".
+Shorts (first chorus, 1:02.5–1:26): https://youtube.com/shorts/gRXD-gNDeIo
 
 ## Title
 
