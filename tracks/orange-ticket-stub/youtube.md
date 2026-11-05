@@ -1,5 +1,8 @@
 # Orange Ticket Stub: YouTube upload kit
 
+Published 2026-11-05: https://youtu.be/8Iu6weR5WIo as
+"Qubit Quill – Orange Ticket Stub (Official Lyric Video)".
+
 ## Title
 
 qubit_quill – Orange Ticket Stub (Official Lyric Video)
