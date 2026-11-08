@@ -11,6 +11,10 @@ import { VERTICAL } from './params.js'
 //   macro - a tight, cropped close-up of the hero with a label
 // Text is kept away from the bottom-right corner, where YouTube draws the duration.
 // scene.json "thumbnail": { "line": "...", "highlight": "word", "tag": "LYRIC VIDEO", "t": 66 }
+//   promo  - marketing cover: a hook line, a release badge, the hero, artist and
+//            title (scene.json "promo": { "hook": "...", "highlight": ["words"], "badge": "..." }).
+//            The vertical one keeps everything inside the centre 3:4, the part
+//            TikTok shows in profile grids.
 
 function HeroArt({ track, w, h }) {
   const Custom = track.Hero
@@ -238,14 +242,117 @@ function VerticalVariant({ track, tag, line, highlight, withLine }) {
   )
 }
 
+function Hook({ track, text, highlight = [], size, align }) {
+  const { fonts, colors } = track.scene
+  const hl = new Set(highlight.map((w) => w.toLowerCase()))
+  return (
+    <div
+      style={{
+        fontFamily: `'${fonts.body}', serif`,
+        fontWeight: 600,
+        fontSize: size,
+        lineHeight: 1.02,
+        letterSpacing: '-0.02em',
+        color: colors.text,
+        textAlign: align,
+        textWrap: 'balance',
+        textShadow: '0 6px 30px rgba(0,0,0,0.6)',
+      }}
+    >
+      {text.split(' ').map((wd, i) => (
+        <span key={i}>
+          {i > 0 && ' '}
+          {hl.has(wd.toLowerCase().replace(/[^\w']/g, '')) ? (
+            <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: '0 0 50px rgba(255,138,42,0.9)' }}>{wd}</span>
+          ) : (
+            wd
+          )}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function Badge({ track, children, size }) {
+  return (
+    <div
+      style={{
+        display: 'inline-block',
+        padding: `${size * 0.42}px ${size * 0.9}px`,
+        borderRadius: 999,
+        background: track.scene.colors.accent,
+        boxShadow: '0 10px 40px rgba(255,120,30,0.45)',
+      }}
+    >
+      <Tag track={track} style={{ fontSize: size, color: '#1a0c06', letterSpacing: '0.24em' }}>
+        {children}
+      </Tag>
+    </div>
+  )
+}
+
+function Credit({ track, size }) {
+  const { fonts, colors, artist, title } = track.scene
+  return (
+    <div style={{ fontFamily: `'${fonts.display}', monospace`, textTransform: 'uppercase', letterSpacing: '0.3em', fontSize: size }}>
+      <span style={{ color: colors.text }}>{artist}</span>
+      <span style={{ color: colors.accent }}> — {title}</span>
+    </div>
+  )
+}
+
+function PromoVariant({ track, hook, highlight, badge }) {
+  const [w, h] = heroBox(track)
+  if (VERTICAL)
+    return (
+      <>
+        <Glow x={520} y={1180} size={1300} alpha={0.6} />
+        <Rings x={520} y={1180} />
+        <div style={{ position: 'absolute', left: 0, right: 40, top: 330, textAlign: 'center' }}>
+          <Badge track={track} size={30}>{badge}</Badge>
+        </div>
+        <div style={{ position: 'absolute', left: 70, right: 110, top: 470 }}>
+          <Hook track={track} text={hook} highlight={highlight} size={118} align="center" />
+        </div>
+        <div style={{ position: 'absolute', left: 520 - w / 2, top: 1180 - h / 2, transform: `scale(${860 / w}) rotate(-9deg)` }}>
+          <HeroArt track={track} w={w} h={h} />
+        </div>
+        <div style={{ position: 'absolute', left: 40, right: 80, top: 1540, textAlign: 'center' }}>
+          <Credit track={track} size={26} />
+        </div>
+      </>
+    )
+  return (
+    <>
+      <Glow x={1440} y={560} size={1200} alpha={0.6} />
+      <Rings x={1440} y={540} />
+      <div style={{ position: 'absolute', left: 1440 - w / 2, top: 540 - h / 2, transform: `scale(${780 / w}) rotate(-10deg)` }}>
+        <HeroArt track={track} w={w} h={h} />
+      </div>
+      <div style={{ position: 'absolute', left: 110, top: 150, width: 980 }}>
+        <Badge track={track} size={30}>{badge}</Badge>
+        <div style={{ marginTop: 50 }}>
+          <Hook track={track} text={hook} highlight={highlight} size={128} align="left" />
+        </div>
+        <div style={{ marginTop: 56 }}>
+          <Credit track={track} size={28} />
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function Thumbnail({ track, variant }) {
   const cfg = { tag: 'Lyric video', line: track.scene.title, t: 66, ...track.scene.thumbnail }
   const t = cfg.t
+  const promo = { badge: 'New song · out now', hook: track.scene.title, highlight: [], ...track.scene.promo }
   return (
     <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', background: '#000' }}>
       <Background track={track} section="chorus" t={t} />
       <Motes track={track} t={t} />
-      {VERTICAL ? (
+      {variant === 'promo' ? (
+        <PromoVariant track={track} hook={promo.hook} highlight={promo.highlight} badge={promo.badge} />
+      ) : VERTICAL ? (
         <VerticalVariant track={track} tag={cfg.tag} line={cfg.line} highlight={cfg.highlight} withLine={variant !== 'hero'} />
       ) : variant === 'line' ? (
         <LineVariant track={track} tag={cfg.tag} line={cfg.line} highlight={cfg.highlight} />

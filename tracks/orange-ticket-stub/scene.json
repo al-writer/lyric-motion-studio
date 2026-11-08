@@ -39,5 +39,13 @@
     "tag": "Lyric video",
     "line": "I keep the little things",
     "highlight": "little"
+  },
+  "promo": {
+    "hook": "POV: you still keep their ticket stub",
+    "highlight": [
+      "ticket",
+      "stub"
+    ],
+    "badge": "New song · out now"
   }
 }
