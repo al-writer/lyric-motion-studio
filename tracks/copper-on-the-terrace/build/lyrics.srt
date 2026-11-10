@@ -1,21 +1,21 @@
 1
-00:00:12,040 --> 00:00:23,180
+00:00:20,980 --> 00:00:25,010
 Champagne flutes on the limestone ledge
 
 2
-00:00:23,230 --> 00:00:27,140
+00:00:25,130 --> 00:00:27,230
 Three dozen stories above the avenue hedge
 
 3
-00:00:27,190 --> 00:00:30,110
+00:00:27,280 --> 00:00:30,110
 You’re leaning back in your linen shirt
 
 4
-00:00:30,160 --> 00:00:34,670
+00:00:30,160 --> 00:00:34,710
 Laughing too loud so the truth won't hurt
 
 5
-00:00:34,720 --> 00:00:38,990
+00:00:34,760 --> 00:00:38,990
 The sun drops low like a minted coin
 
 6
@@ -23,197 +23,197 @@ The sun drops low like a minted coin
 Where the rusted girders and brick adjoin
 
 7
-00:00:43,390 --> 00:00:46,110
+00:00:43,390 --> 00:00:46,130
 Everyone’s acting like August stayed
 
 8
-00:00:46,160 --> 00:00:50,150
+00:00:46,180 --> 00:00:50,190
 While the terrace shadows begin to trade
 
 9
-00:00:50,200 --> 00:00:54,270
+00:00:50,240 --> 00:00:54,170
 There’s a sudden bite in the evening air
 
 10
-00:00:54,320 --> 00:00:58,050
+00:00:54,220 --> 00:00:58,030
 And you trace the rim of your crystal ware
 
 11
-00:00:58,100 --> 00:01:02,290
+00:00:58,080 --> 00:01:02,470
 You look at the skyline, not at me
 
 12
-00:01:02,340 --> 00:01:06,070
+00:01:02,520 --> 00:01:06,620
 Like a ship already out to sea
 
 13
-00:01:06,120 --> 00:01:09,970
+00:02:10,760 --> 00:03:18,430
 It’s copper on the terrace, gold turning to rust
 
 14
-00:01:10,020 --> 00:01:14,010
+00:03:18,480 --> 00:03:22,390
 All of our promises ground into velvet dust
 
 15
-00:01:14,060 --> 00:01:17,790
-Dance me to the edge of the balcony rail
-
-16
-00:01:17,840 --> 00:01:22,030
-Before the warm trade winds begin to fail
-
-17
-00:01:22,080 --> 00:01:25,670
-You’re holding my waist like a souvenir
-
-18
-00:01:25,720 --> 00:01:30,350
-In the brightest hour of a dying year
-
-19
-00:01:30,400 --> 00:01:36,060
-Yeah, it’s copper on the terrace tonight
-
-20
-00:01:37,900 --> 00:01:43,170
-Your best friend’s spinning an old French record
-
-21
-00:01:43,220 --> 00:01:46,830
-Our history’s suddenly strangely checkered
-
-22
-00:01:46,880 --> 00:01:50,550
-You hand me your jacket, the lining’s torn
-
-23
-00:01:50,600 --> 00:01:54,450
-Swearing this fever is newly born
-
-24
-00:01:54,500 --> 00:01:58,390
-But I know the cadence of an exit line
-
-25
-00:01:58,440 --> 00:02:02,330
-Dressed up in vintage cabernet wine
-
-26
-00:02:02,380 --> 00:02:06,370
-You kiss my collarbone, quick and polite
-
-27
-00:02:06,420 --> 00:02:09,890
-Beneath the amber Edison string-bulb light
-
-28
-00:02:09,940 --> 00:02:13,310
-There’s a sudden bite in the evening air
-
-29
-00:02:13,360 --> 00:02:17,190
-And you trace the rim of your crystal ware
-
-30
-00:02:17,240 --> 00:02:21,530
-You look at the skyline, not at me
-
-31
-00:02:21,580 --> 00:02:26,000
-Like a ship already out to sea
-
-32
-00:02:27,080 --> 00:02:31,130
-It’s copper on the terrace, gold turning to rust
-
-33
-00:02:31,180 --> 00:02:35,030
-All of our promises ground into velvet dust
-
-34
-00:02:35,080 --> 00:02:38,930
-Dance me to the edge of the balcony rail
-
-35
-00:02:38,980 --> 00:02:43,010
-Before the warm trade winds begin to fail
-
-36
-00:02:43,060 --> 00:02:46,690
-You’re holding my waist like a souvenir
-
-37
-00:02:46,740 --> 00:02:51,580
-In the brightest hour of a dying year
-
-38
-00:02:51,630 --> 00:02:58,220
-Yeah, it’s copper on the terrace tonight
-
-39
-00:02:58,890 --> 00:03:02,230
-Remember July on the fire escape?
-
-40
-00:03:02,280 --> 00:03:04,110
-When every tomorrow had a reckless shape!
-
-41
-00:03:04,160 --> 00:03:06,130
-Now you’re folding your secrets into your cuff
-
-42
-00:03:06,180 --> 00:03:08,190
-As if wanting you once wasn't quite enough!
-
-43
-00:03:08,240 --> 00:03:10,210
-Don't tell me the season is just a phase
-
-44
-00:03:10,260 --> 00:03:13,000
-When I see the frost in your sideways gaze!
-
-45
-00:03:14,540 --> 00:03:18,410
-It’s copper on the terrace, gold turning to rust!
-
-46
-00:03:18,460 --> 00:03:22,390
-All of our promises ground into velvet dust!
-
-47
 00:03:22,440 --> 00:03:26,390
 Dance me to the edge of the balcony rail
 
+16
+00:03:26,440 --> 00:03:31,320
+Before the warm trade winds begin to fail
+
+17
+00:03:31,370 --> 00:03:34,170
+You’re holding my waist like a souvenir
+
+18
+00:03:34,220 --> 00:03:38,250
+In the brightest hour of a dying year
+
+19
+00:03:38,300 --> 00:03:39,230
+Yeah, it’s copper on the terrace tonight
+
+20
+00:03:39,280 --> 00:01:43,630
+Your best friend’s spinning an old French record
+
+21
+00:01:43,680 --> 00:01:47,410
+Our history’s suddenly strangely checkered
+
+22
+00:01:47,480 --> 00:01:51,300
+You hand me your jacket, the lining’s torn
+
+23
+00:01:51,380 --> 00:01:55,030
+Swearing this fever is newly born
+
+24
+00:01:55,080 --> 00:01:58,900
+But I know the cadence of an exit line
+
+25
+00:01:58,980 --> 00:02:02,710
+Dressed up in vintage cabernet wine
+
+26
+00:02:02,780 --> 00:02:06,230
+You kiss my collarbone, quick and polite
+
+27
+00:02:06,280 --> 00:02:10,440
+Beneath the amber Edison string-bulb light
+
+28
+00:02:10,580 --> 00:02:14,480
+There’s a sudden bite in the evening air
+
+29
+00:02:14,580 --> 00:02:18,310
+And you trace the rim of your crystal ware
+
+30
+00:02:18,380 --> 00:02:22,030
+You look at the skyline, not at me
+
+31
+00:02:22,080 --> 00:02:26,060
+Like a ship already out to sea
+
+32
+00:02:26,180 --> 00:02:30,000
+It’s copper on the terrace, gold turning to rust
+
+33
+00:02:30,080 --> 00:02:33,980
+All of our promises ground into velvet dust
+
+34
+00:02:34,080 --> 00:02:37,980
+Dance me to the edge of the balcony rail
+
+35
+00:02:38,080 --> 00:02:41,980
+Before the warm trade winds begin to fail
+
+36
+00:02:42,080 --> 00:02:45,980
+You’re holding my waist like a souvenir
+
+37
+00:02:46,080 --> 00:02:49,980
+In the brightest hour of a dying year
+
+38
+00:02:50,080 --> 00:02:55,680
+Yeah, it’s copper on the terrace tonight
+
+39
+00:02:58,180 --> 00:03:00,230
+Remember July on the fire escape?
+
+40
+00:03:00,280 --> 00:03:02,130
+When every tomorrow had a reckless shape!
+
+41
+00:03:02,180 --> 00:03:03,930
+Now you’re folding your secrets into your cuff
+
+42
+00:03:03,980 --> 00:03:05,730
+As if wanting you once wasn't quite enough!
+
+43
+00:03:05,780 --> 00:03:08,130
+Don't tell me the season is just a phase
+
+44
+00:03:08,180 --> 00:03:13,360
+When I see the frost in your sideways gaze!
+
+45
+00:03:13,680 --> 00:03:17,580
+It’s copper on the terrace, gold turning to rust!
+
+46
+00:03:17,680 --> 00:03:21,580
+All of our promises ground into velvet dust!
+
+47
+00:03:21,680 --> 00:03:25,410
+Dance me to the edge of the balcony rail
+
 48
-00:03:26,440 --> 00:03:31,410
+00:03:25,480 --> 00:03:29,290
 Before the warm trade winds begin to fail!
 
 49
-00:03:31,460 --> 00:03:34,250
+00:03:29,380 --> 00:03:33,280
 You’re holding my waist like a souvenir
 
 50
-00:03:34,300 --> 00:03:38,840
+00:03:33,380 --> 00:03:38,980
 In the brightest hour of a dying year
 
 51
-00:03:38,890 --> 00:03:45,160
+00:03:39,910 --> 00:03:46,120
 Yeah, it’s copper on the terrace tonight!
 
 52
-00:03:47,240 --> 00:03:50,930
+00:03:47,240 --> 00:03:50,750
 Copper and rust on the avenue
 
 53
-00:03:50,980 --> 00:03:55,050
+00:03:50,800 --> 00:03:55,050
 The air turns sharp between me and you
 
 54
-00:03:55,100 --> 00:03:57,930
+00:03:55,100 --> 00:03:58,130
 Just a souvenir
 
 55
-00:03:57,980 --> 00:04:38,980
+00:03:58,180 --> 00:04:03,000
 in the fading glow
