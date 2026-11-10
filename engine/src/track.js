@@ -6,7 +6,7 @@ const lyricsFiles = import.meta.glob('@tracks/*/build/lyrics.json', { import: 'd
 const audioFiles = import.meta.glob('@tracks/*/build/audio.json', { import: 'default' })
 const covers = import.meta.glob('@tracks/*/build/cover.jpg', { query: '?url', import: 'default' })
 const songs = import.meta.glob('@tracks/*/song.{mp3,wav,m4a,flac}', { query: '?url', import: 'default' })
-const heroes = import.meta.glob('@tracks/*/scene/*.jsx', { import: 'default' })
+const components = import.meta.glob('@tracks/*/scene/*.jsx', { import: 'default' })
 
 const slugOf = (path) => path.match(/tracks\/([^/]+)\//)[1]
 export const TRACKS = [...new Set(Object.keys(scenes).map(slugOf))].sort()
@@ -49,6 +49,7 @@ export const DEFAULT_SCENE = {
   title: '',
   artist: '',
   layout: 'wheel', // wheel | single
+  stage: null, // scene/<file>.jsx drawing the whole frame instead of the built-in layouts
   fonts: { body: 'Fraunces Variable', display: 'Space Mono', hand: 'Caveat' },
   colors: { text: '#f7ead9', accent: '#ff8a2a', accentSoft: '#ffb470' },
   palette: DEFAULT_PALETTE,
@@ -79,7 +80,9 @@ export async function loadTrack(slug) {
     palette: { ...DEFAULT_PALETTE, ...scene.palette },
     reactive: { ...DEFAULT_SCENE.reactive, ...scene.reactive },
   }
-  const Hero = merged.hero.type === 'component' ? await pick(heroes, slug, merged.hero.file) : null
+  const Hero = merged.hero.type === 'component' ? await pick(components, slug, merged.hero.file) : null
+  // A track can replace the whole stage (background, hero and lyrics) with its own component.
+  const Stage = merged.stage ? await pick(components, slug, merged.stage) : null
   const re = (list) => list.map((s) => new RegExp(s, 'i'))
   return {
     slug,
@@ -92,6 +95,7 @@ export async function loadTrack(slug) {
     coverUrl: cover,
     songUrl: song,
     Hero,
+    Stage,
     emphasis: re(merged.emphasis),
     pop: re(merged.pop),
     vertical: VERTICAL,
@@ -101,3 +105,11 @@ export async function loadTrack(slug) {
 export const lineText = (line) => line.words.map((w) => w.w).join(' ')
 export const isEmphasis = (track, line) => track.emphasis.some((r) => r.test(lineText(line)))
 export const isPop = (track, line) => track.pop.some((r) => r.test(lineText(line)))
+
+// Resolves once every font the scene names is loaded, so text measured by a
+// track's own stage (canvas measureText) uses the real metrics.
+export function fontsReady(scene) {
+  const families = [...new Set(Object.values(scene.fonts))]
+  const faces = families.flatMap((f) => [`400 100px '${f}'`, `italic 500 100px '${f}'`])
+  return Promise.all(faces.map((f) => document.fonts.load(f).catch(() => null))).then(() => document.fonts.ready)
+}

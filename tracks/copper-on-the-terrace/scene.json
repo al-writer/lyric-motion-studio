@@ -3,38 +3,20 @@
   "artist": "Qubit Quill",
   "language": "en",
   "timing": "lrc",
-  "layout": "wheel",
-  "hero": {
-    "type": "component",
-    "file": "Coin.jsx",
-    "size": [600, 600],
-    "patina": [20, 270]
+  "fonts": {
+    "body": "Fraunces Variable",
+    "display": "Anton",
+    "hand": "Caveat"
   },
-  "fonts": { "body": "Fraunces Variable", "display": "Fraunces Variable", "hand": "Caveat" },
   "colors": {
-    "text": "#f6e7d4",
-    "accent": "#d9824b",
-    "accentSoft": "#f2b27a"
+    "text": "#2b1a12",
+    "accent": "#c4572a",
+    "accentSoft": "#f2913f"
   },
-  "palette": {
-    "intro": { "base": "#1a0f0a", "glow": "rgba(255,170,90,0.32)", "glow2": "rgba(150,70,40,0.20)" },
-    "verse": { "base": "#1a0f0a", "glow": "rgba(255,170,90,0.28)", "glow2": "rgba(120,60,40,0.22)" },
-    "pre": { "base": "#15161b", "glow": "rgba(150,170,190,0.24)", "glow2": "rgba(200,105,58,0.16)" },
-    "chorus": { "base": "#2a1208", "glow": "rgba(217,120,64,0.55)", "glow2": "rgba(255,190,110,0.22)" },
-    "bridge": { "base": "#0e1724", "glow": "rgba(159,195,217,0.32)", "glow2": "rgba(200,105,58,0.14)" },
-    "outro": { "base": "#0b1412", "glow": "rgba(79,143,125,0.30)", "glow2": "rgba(200,105,58,0.16)" }
+  "fadeIn": 0.8,
+  "fadeOut": 4,
+  "hero": {
+    "type": "none"
   },
-  "emphasis": ["copper on the terrace"],
-  "pop": ["^dance me to the edge", "^remember july"],
-  "italicSections": ["bridge"],
-  "reactive": {
-    "dots": false,
-    "glow": true,
-    "tilt": true,
-    "motes": true,
-    "spectrum": true,
-    "rings": ["chorus"]
-  },
-  "fadeIn": 1.5,
-  "fadeOut": 4
+  "stage": "Poster.jsx"
 }

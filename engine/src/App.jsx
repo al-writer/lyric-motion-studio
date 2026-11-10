@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RENDER, THUMBNAIL, TRACK } from './params.js'
-import { TRACKS, isEmphasis, isPop, loadTrack } from './track.js'
+import { TRACKS, fontsReady, isEmphasis, isPop, loadTrack } from './track.js'
 import { H, W } from './format.js'
 import { useClock } from './clock.js'
 import Hero from './Hero.jsx'
@@ -42,6 +42,16 @@ function Stage({ track, t }) {
   const { scene } = track
   const r = scene.reactive
   const fade = Math.min(1, t / scene.fadeIn, Math.max(0, (track.duration - t) / scene.fadeOut))
+  if (track.Stage) {
+    const Custom = track.Stage
+    return (
+      <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', color: scene.colors.text }}>
+        <Custom track={track} t={t} cur={cur} section={section} W={W} H={H} />
+        <Grain t={t} />
+        <div style={{ position: 'absolute', inset: 0, background: '#000', opacity: 1 - fade, pointerEvents: 'none' }} />
+      </div>
+    )
+  }
   return (
     <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', color: scene.colors.text }}>
       <Background track={track} section={section} t={t} />
@@ -82,8 +92,8 @@ function Player({ track }) {
   }, [])
 
   useEffect(() => {
-    if (RENDER) document.fonts.ready.then(() => (window.__ready = true))
-  }, [])
+    if (RENDER) fontsReady(track.scene).then(() => (window.__ready = true))
+  }, [track])
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'grid', placeItems: 'center', background: '#000' }}>
@@ -140,7 +150,7 @@ function TrackList() {
 function ThumbnailPage({ track }) {
   const [scale, setScale] = useState(1)
   useEffect(() => {
-    if (RENDER) document.fonts.ready.then(() => (window.__ready = true))
+    if (RENDER) fontsReady(track.scene).then(() => (window.__ready = true))
     else setScale(Math.min(innerWidth / W, innerHeight / H))
   }, [])
   return (
