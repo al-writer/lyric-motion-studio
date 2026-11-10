@@ -22,6 +22,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
 SR, FPS, BANDS = 22050, 30, 32
+LONG_FIRST = 1.6  # s; see align_whisper
 
 SECTION_ALIASES = [
     ("pre", r"pre[- ]?chorus|build"),
@@ -113,6 +114,12 @@ def align_whisper(lines, audio_path, model_name, language):
             else:
                 T[k] = E[p] + (T[n] - E[p]) * (k - p) / (n - p)
             E[k] = T[k] + 0.25
+    for k in range(len(T)):
+        # Whisper stretches a segment's first word back over the instrumental before
+        # it ("Champagne" from 12 s when it is sung at 20.5 s): a line never opens
+        # with a word longer than LONG_FIRST, the start moves up to its end
+        if k in known and flat[k][1] == 0 and E[k] - T[k] > LONG_FIRST:
+            T[k] = E[k] - 0.6
     for idx, (i, j) in enumerate(flat):
         lines[i]["words"][j].update(t=round(T[idx], 2), e=round(E[idx], 2))
     print(f"matched {len(known)}/{len(T)} words")
