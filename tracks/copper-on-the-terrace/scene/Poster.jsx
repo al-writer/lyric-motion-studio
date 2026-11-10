@@ -14,7 +14,7 @@ const SKINS = {
   intro: { bg: '#efe3cc', ink: '#2b1a12', accent: '#c4572a', shadow: 'rgba(196,87,42,0.32)', sun: 1 },
   verse: { bg: '#efe3cc', ink: '#2b1a12', accent: '#c4572a', shadow: 'rgba(196,87,42,0.32)', sun: 1 },
   pre: { bg: '#e2d2b6', ink: '#3a2418', accent: '#9a3d1f', shadow: 'rgba(58,36,24,0.22)', sun: 0.75 },
-  chorus: { bg: '#c4572a', ink: '#fbf0dc', accent: '#2b1a12', shadow: 'rgba(43,26,18,0.38)', sun: 1 },
+  chorus: { bg: '#c4572a', ink: '#fbf0dc', accent: '#2b1a12', shadow: 'rgba(43,26,18,0.38)', sun: 1, adlib: '#2b1a12' },
   bridge: { bg: '#c7d3d8', ink: '#1d2a3a', accent: '#b4532a', shadow: 'rgba(29,42,58,0.25)', sun: 0.35 },
   outro: { bg: '#1c120d', ink: '#efe3cc', accent: '#6fb39c', shadow: 'rgba(0,0,0,0.5)', sun: 0.6 },
 }
@@ -241,6 +241,57 @@ function Sparkles({ t, on, color, box }) {
   })
 }
 
+// ---- backing vocals: handwritten, scrawled on as they are sung ----
+const WRITE = 0.9 // s to "write" an ad-lib on
+function AdLibs({ lines, t, fonts, color, at, size }) {
+  const shown = lines.flatMap((l) => l.adlibs ?? []).filter((a) => t >= a.t - 0.05 && t < a.e + 0.5)
+  return shown.map((a, n) => {
+    const w = clamp((t - a.t) / WRITE)
+    const q = clamp((t - a.e) / 0.5)
+    const ease = 1 - (1 - w) ** 2
+    return (
+      <div
+        key={a.t}
+        style={{
+          position: 'absolute',
+          left: at.x,
+          top: at.y + n * size * 1.1,
+          transform: `rotate(-7deg) translateY(${-30 * q}px)`,
+          transformOrigin: '0 50%',
+          opacity: 1 - q,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: `'${fonts.hand}', cursive`,
+            fontWeight: 600,
+            fontSize: size,
+            lineHeight: 1,
+            color,
+            clipPath: `inset(-20% ${((1 - ease) * 100).toFixed(2)}% -20% -5%)`,
+          }}
+        >
+          {a.text}
+        </div>
+        {/* pen swoosh under it, drawn right after the words */}
+        <svg width={size * 6} height={size * 0.4} viewBox="0 0 600 40" style={{ display: 'block', marginTop: -size * 0.05, overflow: 'visible' }}>
+          <path
+            d="M6 28 C 150 6, 330 6, 590 18"
+            fill="none"
+            stroke={color}
+            strokeWidth="6"
+            strokeLinecap="round"
+            pathLength="1"
+            strokeDasharray="1"
+            strokeDashoffset={1 - clamp((t - a.t - WRITE * 0.8) / 0.4)}
+          />
+        </svg>
+      </div>
+    )
+  })
+}
+
 // ---- stage ----
 export default function Poster({ track, t, section, W, H }) {
   const vertical = H > W
@@ -300,6 +351,14 @@ export default function Poster({ track, t, section, W, H }) {
         <span>{(SECTION_LABEL[section] ?? '').toUpperCase()}</span>
       </div>
 
+      <AdLibs
+        lines={lines}
+        t={t}
+        fonts={fonts}
+        color={skin.adlib ?? skin.ink}
+        at={vertical ? { x: 140, y: box.y + box.h + 10 } : { x: 1150, y: 690 }}
+        size={vertical ? 92 : 96}
+      />
       <Sparkles t={t} on={chorus} color={skin.ink} box={box} />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${1 + (chorus ? 0.012 : 0.004) * bass * bass})`, transformOrigin: '40% 50%' }}>
         {stacks.map((s) => (

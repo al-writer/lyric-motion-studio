@@ -4,7 +4,8 @@
 
 Reads tracks/<slug>/song.(mp3|wav|m4a|flac) and lyrics.(lrc|txt) and writes
 tracks/<slug>/build/:
-    lyrics.json  word-timed lines the engine plays
+    lyrics.json  word-timed lines the engine plays (plus "adlibs": backing vocals
+                 written in parentheses, which are kept out of the sung words)
     audio.json   per-frame spectrum / energy / bass / highs and kick times
     cover.jpg    cover art embedded in the audio file, if any
     lyrics.lrc   enhanced LRC (word tags) and lyrics.srt, for distributors
@@ -34,6 +35,11 @@ SECTION_ALIASES = [
     ("verse", r"verse|rap"),
 ]
 LRC_TIME = re.compile(r"\[(\d+):(\d+(?:\.\d+)?)\]")
+# backing vocals / ad-libs: "(Turning to rust, baby!)" anywhere in a line, optionally
+# timed with an enhanced-LRC tag "(<03:18.20>Turning to rust, baby!)". They are not
+# part of the sung line: Whisper never sees them, the stage shows them on their own.
+ADLIB = re.compile(r"\(\s*(?:<(\d+):(\d+(?:\.\d+)?)>)?\s*([^)]+?)\s*\)")
+ADLIB_DELAY, ADLIB_LEN = 0.4, 2.6  # s after the line's last word starts; how long it stays
 
 LRC_META = re.compile(r"^\[(ar|ti|al|au|by|length|offset|re|ve|#):", re.I)
 
@@ -60,6 +66,8 @@ def parse_lyrics(path):
         m = LRC_TIME.match(s)
         t = int(m.group(1)) * 60 + float(m.group(2)) if m else None
         s = LRC_TIME.sub("", s).strip()
+        adlibs = [{"text": a, "at": int(am) * 60 + float(asec) if am else None} for am, asec, a in ADLIB.findall(s)]
+        s = ADLIB.sub("", s).strip()
         # enhanced LRC: "<mm:ss.xx>word" tags give each word its own start
         words, wt, pending = [], [], None
         for tag_m, tag_s, word in re.findall(r"<(\d+):(\d+(?:\.\d+)?)>|([^\s<]+)", s):
@@ -70,7 +78,7 @@ def parse_lyrics(path):
             else:
                 pending = int(tag_m) * 60 + float(tag_s)
         if words:
-            lines.append({"section": section, "words": [{"w": w} for w in words], "lrc": t, "lrcWords": wt})
+            lines.append({"section": section, "words": [{"w": w} for w in words], "lrc": t, "lrcWords": wt, "adlibs": adlibs})
     return lines
 
 
@@ -332,6 +340,13 @@ def main():
     for l in lines:
         l["t"], l["e"] = l["words"][0]["t"], l["words"][-1]["e"]
         del l["lrc"], l["lrcWords"]
+        adlibs = l.pop("adlibs")
+        if adlibs:
+            for n, a in enumerate(adlibs):
+                t = a["at"] if a["at"] is not None else l["words"][-1]["t"] + ADLIB_DELAY + n * ADLIB_LEN
+                a.update(t=round(t, 2), e=round(t + ADLIB_LEN, 2))
+                del a["at"]
+            l["adlibs"] = adlibs
     (out / "lyrics.json").write_text(json.dumps({"timing": timing, "lines": lines}, ensure_ascii=False, indent=1))
     export(lines, out)
     print(f"wrote {out.relative_to(ROOT)}: {len(lines)} lines, {audio['duration']:.1f}s, {len(audio['beats'])} kicks")

@@ -26,6 +26,13 @@ repeated, split very long lines. The lyrics file supplies the text; Whisper
 only supplies the timestamps. To trust an LRC file's own timestamps instead,
 set `"timing": "lrc"`.
 
+Backing vocals and ad-libs go in parentheses, as Suno writes them:
+`gold turning to rust! (Turning to rust, baby!)`. They are kept out of the
+sung line (Whisper never sees them) and stored as the line's `adlibs`, shown
+just after the line's last word for 2.6 s; pin one with an LRC tag inside the
+parentheses, `(<03:18.20>Turning to rust, baby!)`. A track's own stage decides
+how to draw them.
+
 ## scene.json
 
 ```json

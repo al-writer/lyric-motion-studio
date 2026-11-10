@@ -2024,7 +2024,14 @@
     }
    ],
    "t": 194.5,
-   "e": 198.46
+   "e": 198.46,
+   "adlibs": [
+    {
+     "text": "Turning to rust, baby!",
+     "t": 198.52,
+     "e": 201.12
+    }
+   ]
   },
   {
    "section": "chorus",
@@ -2170,7 +2177,14 @@
     }
    ],
    "t": 206.44,
-   "e": 211.48
+   "e": 211.48,
+   "adlibs": [
+    {
+     "text": "Don't let it fail now!",
+     "t": 210.54,
+     "e": 213.14
+    }
+   ]
   },
   {
    "section": "chorus",
