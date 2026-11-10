@@ -1,85 +1,85 @@
 1
-00:00:23,700 --> 00:00:25,450
+00:00:12,040 --> 00:00:23,180
 Champagne flutes on the limestone ledge
 
 2
-00:00:25,500 --> 00:00:27,550
+00:00:23,230 --> 00:00:27,140
 Three dozen stories above the avenue hedge
 
 3
-00:00:27,600 --> 00:00:30,110
+00:00:27,190 --> 00:00:30,110
 You’re leaning back in your linen shirt
 
 4
-00:00:30,160 --> 00:00:34,820
+00:00:30,160 --> 00:00:34,670
 Laughing too loud so the truth won't hurt
 
 5
-00:00:34,870 --> 00:00:39,010
+00:00:34,720 --> 00:00:38,990
 The sun drops low like a minted coin
 
 6
-00:00:39,060 --> 00:00:43,340
+00:00:39,040 --> 00:00:43,340
 Where the rusted girders and brick adjoin
 
 7
-00:00:43,390 --> 00:00:46,130
+00:00:43,390 --> 00:00:46,110
 Everyone’s acting like August stayed
 
 8
-00:00:46,180 --> 00:00:50,210
+00:00:46,160 --> 00:00:50,150
 While the terrace shadows begin to trade
 
 9
-00:00:50,260 --> 00:00:54,370
+00:00:50,200 --> 00:00:54,270
 There’s a sudden bite in the evening air
 
 10
-00:00:54,420 --> 00:00:57,970
+00:00:54,320 --> 00:00:58,050
 And you trace the rim of your crystal ware
 
 11
-00:00:58,020 --> 00:01:02,330
+00:00:58,100 --> 00:01:02,290
 You look at the skyline, not at me
 
 12
-00:01:02,380 --> 00:01:06,070
+00:01:02,340 --> 00:01:06,070
 Like a ship already out to sea
 
 13
-00:01:06,120 --> 00:01:09,710
+00:01:06,120 --> 00:01:09,970
 It’s copper on the terrace, gold turning to rust
 
 14
-00:01:09,760 --> 00:01:14,030
+00:01:10,020 --> 00:01:14,010
 All of our promises ground into velvet dust
 
 15
-00:01:14,080 --> 00:01:17,790
+00:01:14,060 --> 00:01:17,790
 Dance me to the edge of the balcony rail
 
 16
-00:01:17,840 --> 00:01:22,070
+00:01:17,840 --> 00:01:22,030
 Before the warm trade winds begin to fail
 
 17
-00:01:22,120 --> 00:01:25,690
+00:01:22,080 --> 00:01:25,670
 You’re holding my waist like a souvenir
 
 18
-00:01:25,740 --> 00:01:30,340
+00:01:25,720 --> 00:01:30,350
 In the brightest hour of a dying year
 
 19
-00:01:30,390 --> 00:01:36,060
+00:01:30,400 --> 00:01:36,060
 Yeah, it’s copper on the terrace tonight
 
 20
-00:01:37,940 --> 00:01:43,060
+00:01:37,900 --> 00:01:43,170
 Your best friend’s spinning an old French record
 
 21
-00:01:43,130 --> 00:01:46,830
+00:01:43,220 --> 00:01:46,830
 Our history’s suddenly strangely checkered
 
 22
@@ -123,23 +123,23 @@ You look at the skyline, not at me
 Like a ship already out to sea
 
 32
-00:02:27,020 --> 00:02:30,850
+00:02:27,080 --> 00:02:31,130
 It’s copper on the terrace, gold turning to rust
 
 33
-00:02:30,900 --> 00:02:35,050
+00:02:31,180 --> 00:02:35,030
 All of our promises ground into velvet dust
 
 34
-00:02:35,100 --> 00:02:38,930
+00:02:35,080 --> 00:02:38,930
 Dance me to the edge of the balcony rail
 
 35
-00:02:38,980 --> 00:02:43,150
+00:02:38,980 --> 00:02:43,010
 Before the warm trade winds begin to fail
 
 36
-00:02:43,200 --> 00:02:46,690
+00:02:43,060 --> 00:02:46,690
 You’re holding my waist like a souvenir
 
 37
@@ -151,11 +151,11 @@ In the brightest hour of a dying year
 Yeah, it’s copper on the terrace tonight
 
 39
-00:03:00,340 --> 00:03:02,210
+00:02:58,890 --> 00:03:02,230
 Remember July on the fire escape?
 
 40
-00:03:02,260 --> 00:03:04,110
+00:03:02,280 --> 00:03:04,110
 When every tomorrow had a reckless shape!
 
 41
@@ -175,27 +175,27 @@ Don't tell me the season is just a phase
 When I see the frost in your sideways gaze!
 
 45
-00:03:14,500 --> 00:03:18,410
+00:03:14,540 --> 00:03:18,410
 It’s copper on the terrace, gold turning to rust!
 
 46
-00:03:18,460 --> 00:03:22,410
+00:03:18,460 --> 00:03:22,390
 All of our promises ground into velvet dust!
 
 47
-00:03:22,460 --> 00:03:26,390
+00:03:22,440 --> 00:03:26,390
 Dance me to the edge of the balcony rail
 
 48
-00:03:26,440 --> 00:03:31,430
+00:03:26,440 --> 00:03:31,410
 Before the warm trade winds begin to fail!
 
 49
-00:03:31,480 --> 00:03:34,290
+00:03:31,460 --> 00:03:34,250
 You’re holding my waist like a souvenir
 
 50
-00:03:34,340 --> 00:03:38,840
+00:03:34,300 --> 00:03:38,840
 In the brightest hour of a dying year
 
 51
@@ -211,9 +211,9 @@ Copper and rust on the avenue
 The air turns sharp between me and you
 
 54
-00:03:55,100 --> 00:03:58,230
+00:03:55,100 --> 00:03:57,930
 Just a souvenir
 
 55
-00:03:58,280 --> 00:04:00,430
+00:03:57,980 --> 00:04:38,980
 in the fading glow
