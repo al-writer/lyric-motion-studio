@@ -83,6 +83,51 @@ def norm_word(s):
     return re.sub(r"[^\w']", "", s.lower())
 
 
+def match_words(a, b):
+    """Monotonic word alignment of the lyrics (a) against what Whisper heard (b):
+    a global alignment (Needleman-Wunsch) that rewards same or similar-sounding
+    words and lets either side skip words cheaply. Unlike longest-block matching
+    it cannot lock one repeated chorus onto another and lose everything after it.
+    Returns (lyrics index, heard index) pairs, both increasing."""
+    MATCH, FUZZY, SUB, GAP = 2.0, 0.6, -0.7, -0.5
+    sims = {}
+
+    def score(x, y):
+        if (x, y) not in sims:
+            r = 1.0 if x == y else difflib.SequenceMatcher(None, x, y).ratio()
+            sims[x, y] = MATCH if r >= 0.8 else FUZZY if r >= 0.5 else SUB
+        return sims[x, y]
+
+    n, m = len(a), len(b)
+    D = np.zeros((n + 1, m + 1))
+    D[:, 0] = GAP * np.arange(n + 1)
+    D[0, :] = GAP * np.arange(m + 1)
+    back = np.zeros((n + 1, m + 1), np.int8)  # 0 diagonal, 1 skip lyric word, 2 skip heard word
+    for i in range(1, n + 1):
+        Di, Dp, x = D[i], D[i - 1], a[i - 1]
+        for j in range(1, m + 1):
+            d, u, l = Dp[j - 1] + score(x, b[j - 1]), Dp[j] + GAP, Di[j - 1] + GAP
+            if d >= u and d >= l:
+                Di[j] = d
+            elif u >= l:
+                Di[j], back[i, j] = u, 1
+            else:
+                Di[j], back[i, j] = l, 2
+        back[i, 0] = 1
+    back[0, 1:] = 2
+    pairs, i, j = [], n, m
+    while i > 0 or j > 0:
+        k = back[i, j]
+        if k == 0:
+            pairs.append((i - 1, j - 1))
+            i, j = i - 1, j - 1
+        elif k == 1:
+            i -= 1
+        else:
+            j -= 1
+    return pairs[::-1]
+
+
 def align_whisper(lines, audio_path, model_name, language):
     from faster_whisper import WhisperModel
 
@@ -96,10 +141,8 @@ def align_whisper(lines, audio_path, model_name, language):
     a = [norm_word(lines[i]["words"][j]["w"]) for i, j in flat]
     b = [norm_word(w[2]) for w in heard]
     T, E = [None] * len(a), [None] * len(a)
-    for op, a1, a2, b1, b2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
-        if op == "equal" or (op == "replace" and a2 - a1 == b2 - b1):
-            for k in range(a2 - a1):
-                T[a1 + k], E[a1 + k] = heard[b1 + k][0], heard[b1 + k][1]
+    for i, j in match_words(a, b):
+        T[i], E[i] = heard[j][0], heard[j][1]
     known = [k for k in range(len(T)) if T[k] is not None]
     if not known:
         sys.exit("whisper matched no words; check the lyrics language/text")
