@@ -356,8 +356,8 @@ export default function Poster({ track, t, section, W, H }) {
         t={t}
         fonts={fonts}
         color={skin.adlib ?? skin.ink}
-        at={vertical ? { x: 140, y: box.y + box.h + 10 } : { x: 1150, y: 690 }}
-        size={vertical ? 92 : 96}
+        at={vertical ? { x: 140, y: box.y + box.h + 10 } : { x: 1235, y: 700 }}
+        size={vertical ? 92 : 84}
       />
       <Sparkles t={t} on={chorus} color={skin.ink} box={box} />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${1 + (chorus ? 0.012 : 0.004) * bass * bass})`, transformOrigin: '40% 50%' }}>
