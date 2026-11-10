@@ -8,6 +8,7 @@ tracks/<slug>/build/:
     audio.json   per-frame spectrum / energy / bass / highs and kick times
     cover.jpg    cover art embedded in the audio file, if any
     lyrics.lrc   enhanced LRC (word tags) and lyrics.srt, for distributors
+    whisper.lrc  what Whisper heard (to check the lyrics file against; never used as text)
 
 Timing: by default every word is placed by Whisper on the actual vocal and
 the text comes from the lyrics file (Whisper only supplies timestamps). An
@@ -86,6 +87,7 @@ def align_whisper(lines, audio_path, model_name, language):
 
     model = WhisperModel(model_name, device="cpu", compute_type="int8")
     segs, _ = model.transcribe(decode_audio(audio_path, 16000), language=language, word_timestamps=True, beam_size=5)
+    segs = list(segs)
     heard = [(w.start, w.end, w.word.strip()) for s in segs for w in s.words]
     print(f"whisper heard {len(heard)} words")
 
@@ -114,6 +116,8 @@ def align_whisper(lines, audio_path, model_name, language):
     for idx, (i, j) in enumerate(flat):
         lines[i]["words"][j].update(t=round(T[idx], 2), e=round(E[idx], 2))
     print(f"matched {len(known)}/{len(T)} words")
+    # what Whisper actually heard, line by line, to check the lyrics file against (never used as text)
+    return "".join(f"[{stamp(s.start)}] {s.text.strip()}\n" for s in segs), f"{len(known)}/{len(T)}"
 
 
 def align_lrc(lines, duration):
@@ -228,7 +232,8 @@ def main():
     else:
         model = args.model or scene.get("whisperModel") or ("small.en" if language == "en" else "small")
         print(f"aligning with whisper ({model})…")
-        align_whisper(lines, song, model, language)
+        heard, matched = align_whisper(lines, song, model, language)
+        (out / "whisper.lrc").write_text(f"[#: whisper {model}, matched {matched} words of the lyrics file]\n" + heard, encoding="utf-8")
     for l in lines:
         l["t"], l["e"] = l["words"][0]["t"], l["words"][-1]["e"]
         del l["lrc"], l["lrcWords"]
