@@ -116,8 +116,39 @@ def align_whisper(lines, audio_path, model_name, language):
     for idx, (i, j) in enumerate(flat):
         lines[i]["words"][j].update(t=round(T[idx], 2), e=round(E[idx], 2))
     print(f"matched {len(known)}/{len(T)} words")
+    place_unheard_lines(lines, flat, set(known))
     # what Whisper actually heard, line by line, to check the lyrics file against (never used as text)
     return "".join(f"[{stamp(s.start)}] {s.text.strip()}\n" for s in segs), f"{len(known)}/{len(T)}"
+
+
+def place_unheard_lines(lines, flat, known):
+    """Lines Whisper heard none of (often the first one over a quiet intro) get only
+    interpolated times, squeezed against their neighbours. If the lyrics file is an
+    LRC, put such lines at their own timestamp, shifted by how far the LRC runs
+    ahead of or behind the vocal on the lines Whisper did hear."""
+    words_of = {}
+    for idx, (i, _) in enumerate(flat):
+        words_of.setdefault(i, []).append(idx)
+    heard = {i: any(k in known for k in ks) for i, ks in words_of.items()}
+    offsets = [lines[i]["words"][0]["t"] - lines[i]["lrc"] for i, ks in words_of.items()
+               if lines[i]["lrc"] is not None and ks[0] in known]
+    if not offsets:
+        return
+    off = float(np.median(offsets))
+    for i in sorted(words_of, reverse=True):  # backwards, so the next line is already final
+        line = lines[i]
+        if heard[i] or line["lrc"] is None:
+            continue
+        start = line["lrc"] + off
+        prev_end = lines[i - 1]["words"][-1]["e"] if i > 0 and heard[i - 1] else 0
+        nxt = lines[i + 1]["words"][0]["t"] if i + 1 < len(lines) else start + 4
+        if not prev_end <= start < nxt - 0.3:
+            continue
+        span = min(nxt - start, 6) * 0.85
+        n = len(line["words"])
+        for j, w in enumerate(line["words"]):
+            w.update(t=round(start + span * j / n, 2), e=round(start + span * (j + 1) / n, 2))
+        print(f"line {i + 1} not heard by whisper: placed at its LRC time {start:.2f}s (offset {off:+.2f}s)")
 
 
 def align_lrc(lines, duration):
