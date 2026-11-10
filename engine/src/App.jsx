@@ -149,13 +149,20 @@ function TrackList() {
 
 function ThumbnailPage({ track }) {
   const [scale, setScale] = useState(1)
+  // a still is captured once, so draw it only after the fonts are in (text is measured)
+  const [fonts, setFonts] = useState(false)
   useEffect(() => {
-    if (RENDER) fontsReady(track.scene).then(() => (window.__ready = true))
-    else setScale(Math.min(innerWidth / W, innerHeight / H))
+    fontsReady(track.scene).then(() => setFonts(true))
+    if (!RENDER) setScale(Math.min(innerWidth / W, innerHeight / H))
   }, [])
+  useEffect(() => {
+    if (fonts && RENDER) requestAnimationFrame(() => (window.__ready = true))
+  }, [fonts])
+  if (!fonts) return null
+  const Covers = track.Covers
   return (
     <div style={{ transform: `scale(${scale})`, transformOrigin: '0 0' }}>
-      <Thumbnail track={track} variant={THUMBNAIL} />
+      {Covers ? <Covers track={track} variant={THUMBNAIL} W={W} H={H} /> : <Thumbnail track={track} variant={THUMBNAIL} />}
     </div>
   )
 }

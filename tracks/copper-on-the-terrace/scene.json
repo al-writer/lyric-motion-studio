@@ -18,5 +18,45 @@
   "hero": {
     "type": "none"
   },
-  "stage": "Poster.jsx"
+  "stage": "Poster.jsx",
+  "covers": {
+    "file": "Covers.jsx",
+    "variants": {
+      "title": {
+        "skin": "verse",
+        "line": "Copper on the Terrace",
+        "note": "a rooftop goodbye"
+      },
+      "rust": {
+        "skin": "chorus",
+        "line": "Gold turning to rust",
+        "note": "Copper on the Terrace"
+      },
+      "pov": {
+        "skin": "pre",
+        "line": "POV: the summer ends before the party does",
+        "note": "Copper on the Terrace"
+      },
+      "dust": {
+        "skin": "chorus",
+        "line": "Velvet Dust",
+        "note": "Copper on the Terrace"
+      },
+      "souvenir": {
+        "skin": "outro",
+        "line": "Just a souvenir",
+        "note": "Copper on the Terrace"
+      },
+      "brightest": {
+        "skin": "bridge",
+        "line": "The brightest hour of a dying year",
+        "note": "Copper on the Terrace"
+      },
+      "tradewinds": {
+        "skin": "verse",
+        "line": "Before the trade winds fail",
+        "note": "Copper on the Terrace"
+      }
+    }
+  }
 }

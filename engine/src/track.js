@@ -83,6 +83,8 @@ export async function loadTrack(slug) {
   const Hero = merged.hero.type === 'component' ? await pick(components, slug, merged.hero.file) : null
   // A track can replace the whole stage (background, hero and lyrics) with its own component.
   const Stage = merged.stage ? await pick(components, slug, merged.stage) : null
+  // ...and draw its own thumbnails: "covers": { "file": "X.jsx", "variants": { name: {...} } }
+  const Covers = merged.covers?.file ? await pick(components, slug, merged.covers.file) : null
   const re = (list) => list.map((s) => new RegExp(s, 'i'))
   return {
     slug,
@@ -96,6 +98,7 @@ export async function loadTrack(slug) {
     songUrl: song,
     Hero,
     Stage,
+    Covers,
     emphasis: re(merged.emphasis),
     pop: re(merged.pop),
     vertical: VERTICAL,

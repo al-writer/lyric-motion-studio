@@ -57,6 +57,8 @@ how to draw them.
 | `emphasis` / `pop` | regexes over a line's text: emphasised lines use the display font and accent colour; pop lines spring word by word |
 | `palette` | per-section background: `{ "chorus": { "base": "#250d12", "glow": "rgba(…)", "glow2": "rgba(…)" } }` for `intro`, `verse`, `pre`, `chorus`, `bridge`, `outro` |
 | `fonts` | `body`, `display`, `hand`: bundled are Fraunces Variable, Inter Variable, Space Mono, Caveat |
+| `stage` | `"X.jsx"` in `scene/`: the track draws the whole frame itself (gets `track`, `t`, `cur`, `section`, `W`, `H`) instead of `layout` + `hero` |
+| `covers` | `{ "file": "X.jsx", "variants": { "name": {…} } }`: the track's own thumbnails, rendered with `--thumbnail name,…` |
 | `language`, `whisperModel`, `timing` | alignment settings (`en` uses `small.en`, other languages `small`) |
 | `fadeIn`, `fadeOut` | seconds from / to black |
 

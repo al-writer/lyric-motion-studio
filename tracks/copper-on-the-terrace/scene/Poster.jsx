@@ -10,7 +10,7 @@ import { rng } from '../../../engine/src/clock.js'
 // Everything below is a function of t (backgrounds cross-fade through Framer
 // Motion on rAF and settle in 1.2 s).
 
-const SKINS = {
+export const SKINS = {
   intro: { bg: '#efe3cc', ink: '#2b1a12', accent: '#c4572a', shadow: 'rgba(196,87,42,0.32)', sun: 1 },
   verse: { bg: '#efe3cc', ink: '#2b1a12', accent: '#c4572a', shadow: 'rgba(196,87,42,0.32)', sun: 1 },
   pre: { bg: '#e2d2b6', ink: '#3a2418', accent: '#9a3d1f', shadow: 'rgba(58,36,24,0.22)', sun: 0.75 },
@@ -86,7 +86,7 @@ function layout(words, fonts, box) {
 }
 
 // ---- lyric stack ----
-function Stack({ words, t, enter, exitAt, skin, fonts, box, align }) {
+export function Stack({ words, t, enter, exitAt, skin, fonts, box, align }) {
   const { rows, height, LH } = layout(words, fonts, box)
   const q = clamp((t - exitAt) / 0.32)
   if (t < enter - 0.05 || q >= 1) return null
@@ -150,7 +150,7 @@ function Stack({ words, t, enter, exitAt, skin, fonts, box, align }) {
 }
 
 // ---- scenery ----
-function Sun({ cx, cy, r, t, glow }) {
+export function Sun({ cx, cy, r, t, glow }) {
   // classic 70s striped sun: slits get thicker towards the bottom
   const slits = Array.from({ length: 7 }, (_, i) => ({ y: 0.08 + i * 0.13, h: 0.018 + i * 0.012 }))
   return (
@@ -179,7 +179,7 @@ function Sun({ cx, cy, r, t, glow }) {
   )
 }
 
-function Sunburst({ cx, cy, t, on, color }) {
+export function Sunburst({ cx, cy, t, on, color }) {
   return (
     <motion.div
       initial={false}
@@ -200,7 +200,7 @@ function Sunburst({ cx, cy, t, on, color }) {
   )
 }
 
-function Railing({ W, H, vertical }) {
+export function Railing({ W, H, vertical }) {
   const y = H - (vertical ? 300 : 170)
   const n = Math.ceil(W / 52) + 1
   const col = '#24150e'
