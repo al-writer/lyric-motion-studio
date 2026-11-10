@@ -23,6 +23,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 SR, FPS, BANDS = 22050, 30, 32
 LONG_FIRST = 1.6  # s; see align_whisper
+MAX_WORD_GAP = 4.0  # s; see align_whisper
 
 SECTION_ALIASES = [
     ("pre", r"pre[- ]?chorus|build"),
@@ -143,6 +144,19 @@ def align_whisper(lines, audio_path, model_name, language):
     T, E = [None] * len(a), [None] * len(a)
     for i, j in match_words(a, b):
         T[i], E[i] = heard[j][0], heard[j][1]
+    # Words inside one line are sung close together; a match far after the previous
+    # word of its line is a Whisper hallucination ("Thanks for watching!" in the
+    # silence after the song) and is dropped, to be interpolated below.
+    last = None  # last kept word of the current line
+    for k in range(len(T)):
+        if flat[k][1] == 0:
+            last = None
+        if T[k] is None:
+            continue
+        if last is not None and T[k] - E[last] > MAX_WORD_GAP:
+            T[k] = E[k] = None
+        else:
+            last = k
     known = [k for k in range(len(T)) if T[k] is not None]
     if not known:
         sys.exit("whisper matched no words; check the lyrics language/text")
