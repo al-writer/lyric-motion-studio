@@ -4,10 +4,26 @@
   "language": "kk",
   "timing": "lrc",
   "layout": "wheel",
-  "hero": { "type": "component", "file": "Crows.jsx", "size": [900, 450], "poster": 48 },
-  "backdrop": { "file": "Night.jsx" },
-  "finale": { "from": "bridge" },
-  "fonts": { "body": "Lora Variable", "display": "Rubik Variable", "hand": "Caveat" },
+  "hero": {
+    "type": "component",
+    "file": "Crows.jsx",
+    "size": [
+      900,
+      450
+    ],
+    "poster": 48
+  },
+  "backdrop": {
+    "file": "Night.jsx"
+  },
+  "finale": {
+    "from": "bridge"
+  },
+  "fonts": {
+    "body": "Lora Variable",
+    "display": "Rubik Variable",
+    "hand": "Caveat"
+  },
   "colors": {
     "text": "#eef3ff",
     "accent": "#ffc25a",
@@ -16,26 +32,70 @@
     "mote": "#e6eeff"
   },
   "palette": {
-    "intro": { "base": "#050916", "glow": "rgba(80,120,240,0.20)", "glow2": "rgba(255,190,110,0.10)" },
-    "verse": { "base": "#060b1b", "glow": "rgba(70,110,220,0.24)", "glow2": "rgba(255,180,90,0.12)" },
-    "chorus": { "base": "#0c0920", "glow": "rgba(255,170,70,0.28)", "glow2": "rgba(120,90,255,0.26)" },
-    "bridge": { "base": "#03121a", "glow": "rgba(60,230,170,0.20)", "glow2": "rgba(130,90,255,0.22)" },
-    "outro": { "base": "#070a19", "glow": "rgba(255,190,110,0.20)", "glow2": "rgba(80,120,230,0.18)" }
+    "intro": {
+      "base": "#050916",
+      "glow": "rgba(80,120,240,0.20)",
+      "glow2": "rgba(255,190,110,0.10)"
+    },
+    "verse": {
+      "base": "#060b1b",
+      "glow": "rgba(70,110,220,0.24)",
+      "glow2": "rgba(255,180,90,0.12)"
+    },
+    "chorus": {
+      "base": "#0c0920",
+      "glow": "rgba(255,170,70,0.28)",
+      "glow2": "rgba(120,90,255,0.26)"
+    },
+    "bridge": {
+      "base": "#03121a",
+      "glow": "rgba(60,230,170,0.20)",
+      "glow2": "rgba(130,90,255,0.22)"
+    },
+    "outro": {
+      "base": "#070a19",
+      "glow": "rgba(255,190,110,0.20)",
+      "glow2": "rgba(80,120,230,0.18)"
+    }
   },
-  "emphasis": ["^Қара, қарғам\\.\\.\\.$", "^Қара, қара, қара, қарғам", "^Қарт қарға қарқылдады"],
-  "pop": ["^Қара, қарғам!", "^қараңғыда қардағы", "^қарама-қарсы", "^қарқылдап"],
-  "italicSections": ["intro", "outro"],
-  "reactive": { "dots": false, "glow": true, "tilt": true, "motes": false, "spectrum": true, "rings": ["chorus"] },
+  "emphasis": [
+    "^Қара, қарғам\\.\\.\\.$",
+    "^Қара, қара, қара, қарғам",
+    "^Қарт қарға қарқылдады"
+  ],
+  "pop": [
+    "^Қара, қарғам!",
+    "^қараңғыда қардағы",
+    "^қарама-қарсы",
+    "^қарқылдап"
+  ],
+  "italicSections": [
+    "intro",
+    "outro"
+  ],
+  "reactive": {
+    "dots": false,
+    "glow": true,
+    "tilt": true,
+    "motes": false,
+    "spectrum": true,
+    "rings": [
+      "chorus"
+    ]
+  },
   "fadeIn": 1.2,
   "fadeOut": 2.0,
   "thumbnail": {
     "tag": "Lyric video",
     "line": "Қара, қарғам!",
-    "highlight": "қарғам!"
+    "highlight": "қарғам!",
+    "t": 46
   },
   "promo": {
-    "hook": "Скороговорка про ворону, которую не выговорить",
-    "highlight": ["ворону"],
-    "badge": "Жаңа ән · New song"
+    "hook": "Жаңылтпашты қайталап көр!",
+    "highlight": [
+      "жаңылтпашты"
+    ],
+    "badge": "Жаңа ән"
   }
 }

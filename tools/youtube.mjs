@@ -35,6 +35,9 @@ for (const c of [{ name: 'Intro', t: 0 }, ...titled.map((s) => ({ name: s.name, 
   if (chapters.length > 1 && c.t - chapters.at(-1).t < 10) chapters.pop()
   chapters.push(c)
 }
+// ...and the last one too must last 10 s before the song ends
+const { duration } = JSON.parse(readFileSync(`${ROOT}tracks/${o.track}/build/audio.json`, 'utf8'))
+if (chapters.length > 3 && duration - chapters.at(-1).t < 10) chapters.pop()
 console.log('CHAPTERS')
 for (const c of chapters) console.log(`${stamp(c.t)} ${c.name}`)
 console.log('\nLYRICS')

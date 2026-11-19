@@ -263,7 +263,7 @@ function Hook({ track, text, highlight = [], size, align }) {
       {text.split(' ').map((wd, i) => (
         <span key={i}>
           {i > 0 && ' '}
-          {hl.has(wd.toLowerCase().replace(/[^\w']/g, '')) ? (
+          {hl.has(wd.toLowerCase().replace(/[^\p{L}\p{N}'-]/gu, '')) ? (
             <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: `0 0 50px ${glow(track.scene, 0.9)}` }}>{wd}</span>
           ) : (
             wd
@@ -350,7 +350,7 @@ export default function Thumbnail({ track, variant }) {
   return (
     <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', background: '#000' }}>
       <Background track={track} section="chorus" t={t} />
-      <Motes track={track} t={t} />
+      {track.Backdrop ? <track.Backdrop track={track} t={t} section="chorus" cur={-1} /> : <Motes track={track} t={t} />}
       {variant === 'promo' ? (
         <PromoVariant track={track} hook={promo.hook} highlight={promo.highlight} badge={promo.badge} />
       ) : VERTICAL ? (
