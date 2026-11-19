@@ -1,6 +1,7 @@
 name: Deliver video
 
-# Puts finished videos into a draft GitHub release: plain .mp4 files (no zip),
+# Puts finished videos into a draft GitHub release: plain .mp4 files (no zip;
+# GitHub itself adds "Source code" archives of the repository to every release),
 # served from GitHub's CDN with resumable downloads, visible only to people
 # with write access until published. Runs after every successful render that
 # kept its videos as artifacts (no R2 / Drive), or by hand for an older run.
@@ -33,14 +34,20 @@ jobs:
             --jq '.artifacts[] | select(.name | endswith(".mp4")) | select(.expired | not) | .name' > names.txt
           cat names.txt
           echo "count=$(wc -l < names.txt)" >> "$GITHUB_OUTPUT"
+      # Handles both plain .mp4 artifacts (archive: false) and older zipped
+      # ones: either way the .mp4 files end up directly in videos/.
       - name: Download
         if: steps.find.outputs.count != '0'
-        run: |
-          mkdir videos
-          while read -r name; do
-            gh run download "$RUN_ID" -R "${{ github.repository }}" -n "$name" -D videos
-          done < names.txt
-          ls -la videos
+        uses: actions/download-artifact@v8
+        with:
+          run-id: ${{ env.RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: '*.mp4'
+          path: videos
+          merge-multiple: true
+      - name: List videos
+        if: steps.find.outputs.count != '0'
+        run: ls -la videos
       - name: Create draft release
         if: steps.find.outputs.count != '0'
         run: |

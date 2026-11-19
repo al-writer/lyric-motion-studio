@@ -106,7 +106,7 @@ jobs:
         run: node tools/r2.mjs put out/chunks "runs/${{ github.run_id }}/${{ matrix.format }}"
       - name: Keep chunks as artifact
         if: env.HAS_R2 != 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: chunks-${{ matrix.format }}-${{ strategy.job-index }}
           path: out/chunks/c-*.mp4
@@ -136,7 +136,7 @@ jobs:
         run: node tools/r2.mjs get "runs/${{ github.run_id }}/${{ matrix.format }}/" out/chunks
       - name: Fetch chunks from artifacts
         if: env.HAS_R2 != 'true'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: chunks-${{ matrix.format }}-*
           path: out/chunks
@@ -170,11 +170,12 @@ jobs:
           mkdir -p ~/.config/rclone && printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
           rclone copy "${{ steps.merge.outputs.file }}" "$DRIVE_DEST/${{ inputs.track }}/"
           echo "Google Drive: \`$DRIVE_DEST/${{ inputs.track }}/${{ steps.merge.outputs.name }}\`" >> "$GITHUB_STEP_SUMMARY"
+      # archive: false keeps it a plain .mp4 (no zip) on the run page too; the
+      # artifact is named after the file, which is what deliver.yml looks for
       - name: Keep video as artifact (no R2 / Drive configured)
         if: env.HAS_R2 != 'true' && env.HAS_DRIVE != 'true'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          name: ${{ steps.merge.outputs.name }}
           path: ${{ steps.merge.outputs.file }}
+          archive: false
           retention-days: 1
-          compression-level: 0
