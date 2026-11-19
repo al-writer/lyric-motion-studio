@@ -58,9 +58,14 @@ const BLOCKS = (() => {
   return out
 })()
 
-function Skyline({ t, W, H }) {
-  const scale = W / 1920
-  const base = H - 40 * scale
+// 9:16: the bottom ~400 px sit under the Shorts / Reels / TikTok caption, so
+// the city stands on the spectrum line instead, larger, shifted to keep the
+// headframe clear of the action buttons on the right.
+function Skyline({ t, W, H, vertical }) {
+  const scale = vertical ? 0.85 : W / 1920
+  const base = vertical ? H - 400 : H - 40 * scale
+  const shift = vertical ? -200 : 0
+  const ground = vertical ? 480 : 60
   const slot = Math.floor(t / 6) // windows change every 6 s
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', inset: 0 }}>
@@ -70,14 +75,14 @@ function Skyline({ t, W, H }) {
           <stop offset="1" stopColor="#10172f" />
         </linearGradient>
       </defs>
-      <g transform={`translate(0 ${base}) scale(${scale})`}>
+      <g transform={`translate(${shift} ${base}) scale(${scale})`}>
         {/* terrikons on the horizon */}
         <path d="M120 0 L330 -230 L380 -232 L600 0 Z" fill="url(#nt-cone)" opacity="0.9" />
         <path d="M300 -196 L330 -230 L380 -232 L414 -194 C380 -204 336 -206 300 -196 Z" fill="#cfdaf5" opacity="0.55" />
         <path d="M1240 0 L1420 -190 L1462 -192 L1660 0 Z" fill="url(#nt-cone)" opacity="0.8" />
         <path d="M1395 -162 L1420 -190 L1462 -192 L1490 -160 C1460 -170 1422 -170 1395 -162 Z" fill="#cfdaf5" opacity="0.5" />
         {/* mine headframe (копёр) with its wheels */}
-        <g transform="translate(1600 0)" stroke="#0c1124" strokeWidth="7" fill="none">
+        <g transform={`translate(${vertical ? 1100 : 1600} 0)`} stroke="#0c1124" strokeWidth="7" fill="none">
           <path d="M0 0 L40 -250 L80 0 M10 -60 L70 -60 M18 -120 L62 -120 M26 -180 L54 -180 M40 -250 L120 0" />
           <circle cx="40" cy="-262" r="22" strokeWidth="5" />
           <circle cx="40" cy="-262" r="3" fill="#0c1124" />
@@ -101,7 +106,7 @@ function Skyline({ t, W, H }) {
           )
         })}
         {/* snow on the ground in front */}
-        <path d="M-20 -6 C400 -26 900 -2 1300 -18 C1600 -28 1800 -10 1940 -16 L1940 60 L-20 60 Z" fill="#c4d2f0" opacity="0.85" />
+        <path d={`M-20 -6 C400 -26 900 -2 1300 -18 C1600 -28 1800 -10 1940 -16 L1940 ${ground} L-20 ${ground} Z`} fill="#c4d2f0" opacity="0.85" />
       </g>
     </svg>
   )
@@ -181,7 +186,7 @@ export default function Night({ track, t }) {
         <div style={{ position: 'absolute', left: 66, top: 70, width: 14, height: 12, borderRadius: '50%', background: 'rgba(150,170,215,0.3)' }} />
       </div>
       <Aurora t={t} k={auroraK} energy={f.energy} W={W} H={H} />
-      <Skyline t={t} W={W} H={H} />
+      <Skyline t={t} W={W} H={H} vertical={track.vertical} />
       {/* snow */}
       {FLAKES.map((s, i) => {
         const fall = s.speed * (t * 0.55 + wind * 1.6)
