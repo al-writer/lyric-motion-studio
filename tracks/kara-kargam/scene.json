@@ -6,6 +6,7 @@
   "layout": "wheel",
   "hero": { "type": "component", "file": "Crows.jsx", "size": [900, 450], "poster": 48 },
   "backdrop": { "file": "Night.jsx" },
+  "finale": { "from": "bridge" },
   "fonts": { "body": "Lora Variable", "display": "Rubik Variable", "hand": "Caveat" },
   "colors": {
     "text": "#eef3ff",
