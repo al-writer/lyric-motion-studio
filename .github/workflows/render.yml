@@ -59,8 +59,8 @@ jobs:
       matrix: ${{ steps.plan.outputs.matrix }}
       formats: ${{ steps.plan.outputs.formats }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - id: plan
@@ -89,8 +89,8 @@ jobs:
       max-parallel: 20
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v5
+      - uses: actions/cache@v5
         with:
           path: ~/.npm
           key: npm-${{ hashFiles('package-lock.json') }}
@@ -106,7 +106,7 @@ jobs:
         run: node tools/r2.mjs put out/chunks "runs/${{ github.run_id }}/${{ matrix.format }}"
       - name: Keep chunks as artifact
         if: env.HAS_R2 != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: chunks-${{ matrix.format }}-${{ strategy.job-index }}
           path: out/chunks/c-*.mp4
@@ -125,8 +125,8 @@ jobs:
       matrix:
         format: ${{ fromJSON(needs.plan.outputs.formats) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v5
+      - uses: actions/cache@v5
         with:
           path: ~/.npm
           key: npm-${{ hashFiles('package-lock.json') }}
@@ -136,7 +136,7 @@ jobs:
         run: node tools/r2.mjs get "runs/${{ github.run_id }}/${{ matrix.format }}/" out/chunks
       - name: Fetch chunks from artifacts
         if: env.HAS_R2 != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: chunks-${{ matrix.format }}-*
           path: out/chunks
@@ -172,7 +172,7 @@ jobs:
           echo "Google Drive: \`$DRIVE_DEST/${{ inputs.track }}/${{ steps.merge.outputs.name }}\`" >> "$GITHUB_STEP_SUMMARY"
       - name: Keep video as artifact (no R2 / Drive configured)
         if: env.HAS_R2 != 'true' && env.HAS_DRIVE != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.merge.outputs.name }}
           path: ${{ steps.merge.outputs.file }}

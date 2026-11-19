@@ -23,7 +23,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Check Playwright versions match
         run: |
           npm_pw=$(node -p "require('./package-lock.json').packages['node_modules/playwright'].version")
