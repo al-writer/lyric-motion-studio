@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { HERO_POSE } from './format.js'
 import { BassGlow, BeatRings } from './Reactive.jsx'
+import { glow } from './track.js'
 
 // The central object: a track's own component (scene/<file>.jsx, drawn in a
 // 900x450 box) or, by default, the cover art embedded in the audio file.
@@ -30,7 +31,7 @@ export function Cover({ track }) {
   )
 }
 
-export default function Hero({ track, t, pose, showCredits, rings }) {
+export default function Hero({ track, t, pose, showCredits, rings, section, cur }) {
   const { scene } = track
   if (scene.hero.type === 'none') return null
   const custom = scene.hero.type === 'component' && track.Hero
@@ -57,10 +58,10 @@ export default function Hero({ track, t, pose, showCredits, rings }) {
           transform: `perspective(1400px) translateY(${Math.sin(t * 0.8) * 12}px) rotate(${Math.sin(t * 0.55) * 2.2}deg)${
             r.tilt ? ` rotateY(${Math.sin(t * 0.37) * 9}deg) rotateX(${Math.sin(t * 0.29 + 1) * 6}deg) scale(${1 + 0.028 * bass ** 2})` : ''
           }`,
-          filter: `drop-shadow(0 30px 40px rgba(0,0,0,0.55)) drop-shadow(0 0 ${50 + 40 * energy}px rgba(255,120,30,${(0.15 + 0.3 * energy).toFixed(3)}))`,
+          filter: `drop-shadow(0 30px 40px rgba(0,0,0,0.55)) drop-shadow(0 0 ${50 + 40 * energy}px ${glow(scene, 0.15 + 0.3 * energy)})`,
         }}
       >
-        {custom ? <Custom scene={scene} t={t} /> : <Cover track={track} />}
+        {custom ? <Custom scene={scene} t={t} track={track} section={section} cur={cur} /> : <Cover track={track} />}
       </div>
       <AnimatePresence>
         {showCredits && scene.artist && (

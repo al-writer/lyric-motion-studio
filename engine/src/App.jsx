@@ -45,9 +45,10 @@ function Stage({ track, t }) {
   return (
     <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', color: scene.colors.text }}>
       <Background track={track} section={section} t={t} />
+      {track.Backdrop && <track.Backdrop track={track} t={t} section={section} cur={cur} />}
       {r.dots && <DotGrid track={track} t={t} />}
       {r.motes && <Motes track={track} t={t} />}
-      <Hero track={track} t={t} pose={pose} showCredits={showCredits} rings={cur >= 0 && r.rings.includes(section)} />
+      <Hero track={track} t={t} pose={pose} section={section} cur={cur} showCredits={showCredits} rings={cur >= 0 && r.rings.includes(section)} />
       {scene.layout === 'single' ? (
         <SingleLine track={track} t={t} cur={cur} />
       ) : (

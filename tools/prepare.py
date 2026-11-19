@@ -67,7 +67,9 @@ def parse_lyrics(path):
             else:
                 pending = int(tag_m) * 60 + float(tag_s)
         if words:
-            lines.append({"section": section, "words": [{"w": w} for w in words], "lrc": t, "lrcWords": wt})
+            lines.append({"section": section, "words": [{"w": w} for w in words], "lrc": t, "lrcWords": wt, "lrcEnd": None})
+        elif t is not None and lines:  # a bare "[mm:ss.xx]" ends the previous line (sung lines before a break)
+            lines[-1]["lrcEnd"] = t
     return lines
 
 
@@ -116,15 +118,32 @@ def align_whisper(lines, audio_path, model_name, language):
     print(f"matched {len(known)}/{len(T)} words")
 
 
+VOWELS = re.compile(r"[aeiouyаәеёиоөуұүыіэюяáéíóúäöü]", re.I)
+
+
+def syllables(word):
+    return max(1, len(VOWELS.findall(word)))
+
+
 def align_lrc(lines, duration):
+    """Line timestamps from the LRC; words without their own <mm:ss> tag are
+    spread over the line by syllable count. A line ends at its bare end
+    marker, else just before the next line."""
     if any(l["lrc"] is None for l in lines):
         sys.exit("--timing lrc needs a [mm:ss.xx] timestamp on every line")
     for n, l in enumerate(lines):
-        end = lines[n + 1]["lrc"] if n + 1 < len(lines) else min(duration, l["lrc"] + 4)
-        k = len(l["words"])
+        nxt = lines[n + 1]["lrc"] if n + 1 < len(lines) else min(duration, l["lrc"] + 4)
+        end = l["lrcEnd"] if l["lrcEnd"] is not None else l["lrc"] + (nxt - l["lrc"]) * 0.92
+        span = end - l["lrc"]
+        weights = [syllables(w["w"]) for w in l["words"]]
+        total, acc = sum(weights), 0
+        starts = []
         for j, w in enumerate(l["words"]):
-            t = l["lrcWords"][j] if l["lrcWords"][j] is not None else l["lrc"] + (end - l["lrc"]) * 0.85 * j / k
-            w.update(t=round(t, 2), e=round(t + (end - l["lrc"]) * 0.85 / k, 2))
+            starts.append(l["lrcWords"][j] if l["lrcWords"][j] is not None else l["lrc"] + span * acc / total)
+            acc += weights[j]
+        for j, w in enumerate(l["words"]):
+            e = starts[j + 1] if j + 1 < len(starts) else end
+            w.update(t=round(starts[j], 2), e=round(max(starts[j] + 0.08, e - 0.02), 2))
 
 
 def analyze(audio_path):
@@ -231,7 +250,7 @@ def main():
         align_whisper(lines, song, model, language)
     for l in lines:
         l["t"], l["e"] = l["words"][0]["t"], l["words"][-1]["e"]
-        del l["lrc"], l["lrcWords"]
+        del l["lrc"], l["lrcWords"], l["lrcEnd"]
     (out / "lyrics.json").write_text(json.dumps({"timing": timing, "lines": lines}, ensure_ascii=False, indent=1))
     export(lines, out)
     print(f"wrote {out.relative_to(ROOT)}: {len(lines)} lines, {audio['duration']:.1f}s, {len(audio['beats'])} kicks")

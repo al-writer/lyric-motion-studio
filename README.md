@@ -24,7 +24,7 @@ video** from the Actions tab.
 Lines should be written the way they are sung: repeat a chorus where it is
 repeated, split very long lines. The lyrics file supplies the text; Whisper
 only supplies the timestamps. To trust an LRC file's own timestamps instead,
-set `"timing": "lrc"`.
+set `"timing": "lrc"`. Words without their own `<mm:ss>` tag are spread by syllables; a bare `[mm:ss.xx]` line marks where the previous line ends (before a break).
 
 ## scene.json
 
@@ -47,9 +47,11 @@ set `"timing": "lrc"`.
 | --- | --- |
 | `layout` | `wheel` (picker-style column of lines) or `single` (one line at a time) |
 | `hero` | `{ "type": "cover" }` (art embedded in the audio file, default), `{ "type": "component", "file": "X.jsx", "size": [w, h] }`, or `{ "type": "none" }` |
+| `backdrop` | `{ "file": "X.jsx" }`: the track's own full-stage scenery behind the hero, gets `{ track, t, section, cur }` (e.g. `tracks/kara-kargam/scene/Night.jsx`). Hero components get the same props |
+| `colors` | `text`, `accent`, `accentSoft`, plus `glow` (`"r,g,b"` of every halo) and `mote` |
 | `emphasis` / `pop` | regexes over a line's text: emphasised lines use the display font and accent colour; pop lines spring word by word |
 | `palette` | per-section background: `{ "chorus": { "base": "#250d12", "glow": "rgba(…)", "glow2": "rgba(…)" } }` for `intro`, `verse`, `pre`, `chorus`, `bridge`, `outro` |
-| `fonts` | `body`, `display`, `hand`: bundled are Fraunces Variable, Inter Variable, Space Mono, Caveat |
+| `fonts` | `body`, `display`, `hand`: bundled are Fraunces Variable, Inter Variable, Space Mono, Caveat, and for Cyrillic incl. Kazakh: Lora Variable, Rubik Variable (also Inter, Caveat) |
 | `language`, `whisperModel`, `timing` | alignment settings (`en` uses `small.en`, other languages `small`) |
 | `fadeIn`, `fadeOut` | seconds from / to black |
 

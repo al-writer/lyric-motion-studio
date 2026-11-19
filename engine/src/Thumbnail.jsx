@@ -2,6 +2,7 @@ import { Cover } from './Hero.jsx'
 import { Background, Grain, Motes } from './Scenery.jsx'
 import { H, W } from './format.js'
 import { VERTICAL } from './params.js'
+import { glow } from './track.js'
 
 // YouTube thumbnails (1920x1080, rendered by `tools/render.mjs --thumbnail`;
 // with --format vertical, 1080x1920 covers for Shorts, see VerticalVariant).
@@ -19,13 +20,13 @@ import { VERTICAL } from './params.js'
 function HeroArt({ track, w, h }) {
   const Custom = track.Hero
   return (
-    <div style={{ width: w, height: h, filter: 'drop-shadow(0 40px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 120px rgba(255,120,30,0.55))' }}>
-      {Custom ? <Custom scene={track.scene} t={0} /> : <Cover track={track} />}
+    <div style={{ width: w, height: h, filter: `drop-shadow(0 40px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 120px ${glow(track.scene, 0.55)})` }}>
+      {Custom ? <Custom scene={track.scene} t={track.scene.hero.poster ?? 0} track={track} poster /> : <Cover track={track} />}
     </div>
   )
 }
 
-function Glow({ x, y, size = 1300, alpha = 0.6 }) {
+function Glow({ track, x, y, size = 1300, alpha = 0.6 }) {
   return (
     <div
       style={{
@@ -34,13 +35,13 @@ function Glow({ x, y, size = 1300, alpha = 0.6 }) {
         top: y - size * 0.4,
         width: size,
         height: size * 0.8,
-        background: `radial-gradient(closest-side, rgba(255,130,40,${alpha}), transparent)`,
+        background: `radial-gradient(closest-side, ${glow(track.scene, alpha)}, transparent)`,
       }}
     />
   )
 }
 
-function Rings({ x, y }) {
+function Rings({ track, x, y }) {
   return [560, 820, 1100].map((d, i) => (
     <div
       key={d}
@@ -51,7 +52,7 @@ function Rings({ x, y }) {
         width: d,
         height: d,
         borderRadius: '50%',
-        border: `2px solid rgba(255,170,100,${0.28 - i * 0.08})`,
+        border: `2px solid ${glow(track.scene, 0.28 - i * 0.08)}`,
       }}
     />
   ))
@@ -102,8 +103,8 @@ function HeroVariant({ track, tag }) {
   const k = 1180 / w
   return (
     <>
-      <Glow x={980} y={470} size={1600} alpha={0.65} />
-      <Rings x={980} y={450} />
+      <Glow track={track} x={980} y={470} size={1600} alpha={0.65} />
+      <Rings track={track} x={980} y={450} />
       <div style={{ position: 'absolute', left: 980 - w / 2, top: 450 - h / 2, transform: `scale(${k}) rotate(-7deg)` }}>
         <HeroArt track={track} w={w} h={h} />
       </div>
@@ -122,7 +123,7 @@ function LineVariant({ track, tag, line, highlight }) {
   const words = line.split(' ')
   return (
     <>
-      <Glow x={1460} y={560} size={1200} alpha={0.55} />
+      <Glow track={track} x={1460} y={560} size={1200} alpha={0.55} />
       <div style={{ position: 'absolute', left: 1480 - w / 2, top: 560 - h / 2, transform: `scale(${k}) rotate(-12deg)` }}>
         <HeroArt track={track} w={w} h={h} />
       </div>
@@ -144,7 +145,7 @@ function LineVariant({ track, tag, line, highlight }) {
             <span key={i}>
               {i > 0 && ' '}
               {wd.toLowerCase() === highlight?.toLowerCase() ? (
-                <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: '0 0 50px rgba(255,138,42,0.9)' }}>{wd}</span>
+                <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: `0 0 50px ${glow(track.scene, 0.9)}` }}>{wd}</span>
               ) : (
                 wd
               )}
@@ -162,7 +163,7 @@ function MacroVariant({ track, tag }) {
   const k = 2050 / w
   return (
     <>
-      <Glow x={960} y={540} size={2000} alpha={0.5} />
+      <Glow track={track} x={960} y={540} size={2000} alpha={0.5} />
       <div style={{ position: 'absolute', left: 1240 - w / 2, top: 560 - h / 2, transform: `scale(${k}) rotate(-6deg)` }}>
         <HeroArt track={track} w={w} h={h} />
       </div>
@@ -194,8 +195,8 @@ function VerticalVariant({ track, tag, line, highlight, withLine }) {
   if (!withLine)
     return (
       <>
-        <Glow x={520} y={980} size={1500} alpha={0.6} />
-        <Rings x={520} y={980} />
+        <Glow track={track} x={520} y={980} size={1500} alpha={0.6} />
+        <Rings track={track} x={520} y={980} />
         <div style={{ position: 'absolute', left: 520 - w / 2, top: 980 - h / 2, transform: `scale(${1250 / w}) rotate(-78deg)` }}>
           <HeroArt track={track} w={w} h={h} />
         </div>
@@ -207,7 +208,7 @@ function VerticalVariant({ track, tag, line, highlight, withLine }) {
     )
   return (
     <>
-      <Glow x={520} y={560} size={1300} alpha={0.6} />
+      <Glow track={track} x={520} y={560} size={1300} alpha={0.6} />
       <div style={{ position: 'absolute', left: 520 - w / 2, top: 520 - h / 2, transform: `scale(${930 / w}) rotate(-8deg)` }}>
         <HeroArt track={track} w={w} h={h} />
       </div>
@@ -229,7 +230,7 @@ function VerticalVariant({ track, tag, line, highlight, withLine }) {
             <span key={i}>
               {i > 0 && ' '}
               {wd.toLowerCase() === highlight?.toLowerCase() ? (
-                <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: '0 0 50px rgba(255,138,42,0.9)' }}>{wd}</span>
+                <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: `0 0 50px ${glow(track.scene, 0.9)}` }}>{wd}</span>
               ) : (
                 wd
               )}
@@ -263,7 +264,7 @@ function Hook({ track, text, highlight = [], size, align }) {
         <span key={i}>
           {i > 0 && ' '}
           {hl.has(wd.toLowerCase().replace(/[^\w']/g, '')) ? (
-            <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: '0 0 50px rgba(255,138,42,0.9)' }}>{wd}</span>
+            <span style={{ color: colors.accentSoft, fontStyle: 'italic', textShadow: `0 0 50px ${glow(track.scene, 0.9)}` }}>{wd}</span>
           ) : (
             wd
           )}
@@ -281,7 +282,7 @@ function Badge({ track, children, size }) {
         padding: `${size * 0.42}px ${size * 0.9}px`,
         borderRadius: 999,
         background: track.scene.colors.accent,
-        boxShadow: '0 10px 40px rgba(255,120,30,0.45)',
+        boxShadow: `0 10px 40px ${glow(track.scene, 0.45)}`,
       }}
     >
       <Tag track={track} style={{ fontSize: size, color: '#1a0c06', letterSpacing: '0.24em' }}>
@@ -306,8 +307,8 @@ function PromoVariant({ track, hook, highlight, badge }) {
   if (VERTICAL)
     return (
       <>
-        <Glow x={520} y={1180} size={1300} alpha={0.6} />
-        <Rings x={520} y={1180} />
+        <Glow track={track} x={520} y={1180} size={1300} alpha={0.6} />
+        <Rings track={track} x={520} y={1180} />
         <div style={{ position: 'absolute', left: 0, right: 40, top: 330, textAlign: 'center' }}>
           <Badge track={track} size={30}>{badge}</Badge>
         </div>
@@ -324,8 +325,8 @@ function PromoVariant({ track, hook, highlight, badge }) {
     )
   return (
     <>
-      <Glow x={1440} y={560} size={1200} alpha={0.6} />
-      <Rings x={1440} y={540} />
+      <Glow track={track} x={1440} y={560} size={1200} alpha={0.6} />
+      <Rings track={track} x={1440} y={540} />
       <div style={{ position: 'absolute', left: 1440 - w / 2, top: 540 - h / 2, transform: `scale(${780 / w}) rotate(-10deg)` }}>
         <HeroArt track={track} w={w} h={h} />
       </div>
