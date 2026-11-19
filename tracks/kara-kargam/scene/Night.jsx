@@ -59,11 +59,11 @@ const BLOCKS = (() => {
 })()
 
 // 9:16: the bottom ~400 px sit under the Shorts / Reels / TikTok caption, so
-// the city stands on the spectrum line instead, larger, shifted to keep the
+// the city stands just under the spectrum line instead, larger, shifted to keep the
 // headframe clear of the action buttons on the right.
 function Skyline({ t, W, H, vertical }) {
   const scale = vertical ? 0.85 : W / 1920
-  const base = vertical ? H - 400 : H - 40 * scale
+  const base = vertical ? H - 360 : H - 40 * scale
   const shift = vertical ? -200 : 0
   const ground = vertical ? 480 : 60
   const slot = Math.floor(t / 6) // windows change every 6 s
@@ -100,6 +100,7 @@ function Skyline({ t, W, H, vertical }) {
                 if (!lit) return null
                 const fx = i % b.cols
                 const fy = Math.floor(i / b.cols)
+                if (vertical && fy >= b.floors - 3) return null // keep the floors behind the spectrum dark
                 return <rect key={i} x={b.x + 8 + fx * 18} y={-b.h + 10 + fy * 19} width="9" height="10" fill={r() < 0.75 ? '#ffc56a' : '#9cc2ff'} opacity={0.4 + 0.35 * r()} />
               })}
             </g>
