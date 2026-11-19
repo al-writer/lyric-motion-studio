@@ -17,7 +17,7 @@ on:
 
 permissions:
   contents: write # create the draft release
-  actions: read # read the render run's artifacts
+  actions: write # read the render run's artifacts, delete them once released
 
 jobs:
   deliver:
@@ -54,8 +54,15 @@ jobs:
           track=$(ls videos | head -1 | sed -E 's/-(wide|vertical)-.*//')
           notes="Rendered by https://github.com/${{ github.repository }}/actions/runs/$RUN_ID
 
-          Draft: only people with write access can see it. Delete it once the files are downloaded."
+          Draft: only people with write access can see it."
           gh release create "render-$RUN_ID" videos/*.mp4 -R "${{ github.repository }}" \
             --draft --title "$track · render $RUN_ID" --notes "$notes"
           url=$(gh release view "render-$RUN_ID" -R "${{ github.repository }}" --json url --jq .url)
           echo "### Draft release: $url" >> "$GITHUB_STEP_SUMMARY"
+      # The release now holds the videos; the artifacts were only the way here.
+      - name: Delete video artifacts
+        if: steps.find.outputs.count != '0'
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/$RUN_ID/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name | endswith(".mp4")) | .id' |
+            while read -r id; do gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id"; done

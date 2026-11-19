@@ -5,7 +5,8 @@ name: Render video
 # (secrets R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET)
 # chunks and the final video go through the private bucket and nothing is
 # published on GitHub; a Google Drive copy is added when RCLONE_CONF is set.
-# Without either, the video is kept as a workflow artifact for 1 day.
+# Without either, chunks travel as artifacts (deleted once merged) and the
+# video is kept as an artifact until Deliver puts it into a draft release.
 on:
   workflow_dispatch:
     inputs:
@@ -116,6 +117,10 @@ jobs:
   merge:
     needs: [plan, render]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      actions: write # delete the chunk artifacts once merged
     container:
       image: ghcr.io/${{ github.repository }}/render:latest
       credentials:
@@ -152,6 +157,11 @@ jobs:
           echo "name=$(basename "$file")" >> "$GITHUB_OUTPUT"
           echo "### ${{ inputs.track }} · ${{ matrix.format }} · ${{ inputs.res }}${{ inputs.fps }} · ${{ inputs.quality }}" >> "$GITHUB_STEP_SUMMARY"
           echo "$(du -h "$file" | cut -f1), $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$file")s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Delete chunk artifacts (only the merged video is kept)
+        if: env.HAS_R2 != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tools/artifacts.mjs delete --run ${{ github.run_id }} --prefix chunks-${{ matrix.format }}-
       - name: Upload video to R2
         if: env.HAS_R2 == 'true'
         run: |
@@ -178,4 +188,4 @@ jobs:
         with:
           path: ${{ steps.merge.outputs.file }}
           archive: false
-          retention-days: 1
+          retention-days: 7 # a fallback: Deliver deletes it once it is in the draft release

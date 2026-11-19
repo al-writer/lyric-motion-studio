@@ -85,8 +85,11 @@ Where the video goes:
   (default `gdrive:Lyric Motion Studio`).
 - Neither: the *Deliver video* workflow puts the videos into a **draft
   release** as plain `.mp4` files (resumable downloads, visible only to people
-  with write access). Delete the draft after downloading. It can also be run
-  by hand with the ID of an older render run.
+  with write access). Chunk artifacts are deleted as soon as they are
+  merged, and the video artifact once it is in the release, so Actions
+  storage only holds a render while it runs; the drafts are the archive.
+  Deliver can also be run by hand with the ID of a render run whose video
+  artifact is still there (kept 7 days if delivery failed).
 
 **Locally.** Needs Node 20+, Python 3.10+ and ffmpeg.
 
