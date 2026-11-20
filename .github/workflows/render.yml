@@ -1,0 +1,216 @@
+name: Render video
+
+# Reusable: a project repository calls it with its own inputs and secrets
+#   uses: al-writer/lyric-motion-studio/.github/workflows/render.yml@vX.Y.Z
+# Jobs run in the studio image of the same version, with the caller's
+# repository checked out (only the track's folder).
+#
+# Every shard renders its share of chunks; merge joins each format with the
+# audio; release puts the videos into a draft release of the caller's
+# repository; cleanup removes the chunks whatever happened.
+# With R2 (secrets R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
+# R2_BUCKET) chunks and videos travel through the bucket (videos are kept
+# under renders/<track>/<run>/); without it, through artifacts that are
+# deleted once used. RCLONE_CONF adds a Google Drive copy.
+on:
+  workflow_call:
+    inputs:
+      track: { type: string, required: true, description: "Project folder under the projects directory" }
+      formats: { type: string, default: wide, description: 'wide | vertical | wide+vertical' }
+      res: { type: string, default: 4k, description: 'hd | fhd | 4k | 8k' }
+      fps: { type: string, default: '60' }
+      quality: { type: string, default: master, description: 'master | compat | draft' }
+      highlight: { type: string, default: project, description: 'project | word | line | wipe | none' }
+      range: { type: string, default: '', description: 'Seconds, e.g. 48,92 (empty: whole song)' }
+      shards: { type: string, default: '20', description: "Machines per format" }
+      release: { type: boolean, default: true, description: "Put the videos into a draft release" }
+      projects: { type: string, default: tracks, description: "Projects directory in the caller's repository" }
+      image: { type: string, default: '', description: "Studio image override (default: this version's)" }
+
+env:
+  STUDIO: /studio
+  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  HAS_R2: ${{ secrets.R2_BUCKET != '' && 'true' || 'false' }}
+  HAS_DRIVE: ${{ secrets.RCLONE_CONF != '' && 'true' || 'false' }}
+  ARGS: >-
+    --projects ${{ inputs.projects }} --track ${{ inputs.track }} --res ${{ inputs.res }} --fps ${{ inputs.fps }} --quality ${{ inputs.quality }}
+    ${{ inputs.range != '' && format('--range {0}', inputs.range) || '' }}
+    ${{ inputs.highlight != 'project' && inputs.highlight != '' && format('--highlight {0}', inputs.highlight) || '' }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      formats: ${{ steps.plan.outputs.formats }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: ${{ inputs.projects }}/${{ inputs.track }}
+      - name: Check the project
+        run: node $STUDIO/tools/check.mjs --projects "${{ inputs.projects }}" --track "${{ inputs.track }}"
+      - id: plan
+        env:
+          FORMATS: ${{ inputs.formats }}
+          SHARDS: ${{ inputs.shards }}
+        run: |
+          formats=${FORMATS//+/,}
+          echo "matrix=$(node $STUDIO/tools/plan.mjs --projects "${{ inputs.projects }}" --track "${{ inputs.track }}" --formats "$formats" --shards "$SHARDS")" >> "$GITHUB_OUTPUT"
+          echo "formats=$(node -e "console.log(JSON.stringify(process.argv[1].split(',')))" "$formats")" >> "$GITHUB_OUTPUT"
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+      options: --ipc=host
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: ${{ inputs.projects }}/${{ inputs.track }}
+      - name: Render shard ${{ matrix.shard }}
+        run: node $STUDIO/tools/render.mjs $ARGS --format ${{ matrix.format }} --shard ${{ matrix.shard }} --workers 3 --chunks-dir out/chunks --out out
+      - name: Upload chunks to R2
+        if: env.HAS_R2 == 'true'
+        run: node $STUDIO/tools/r2.mjs put out/chunks "runs/${{ github.run_id }}/${{ matrix.format }}"
+      - name: Keep chunks as artifact
+        if: env.HAS_R2 != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: chunks-${{ matrix.format }}-${{ strategy.job-index }}
+          path: out/chunks/c-*.mp4
+          retention-days: 1
+          if-no-files-found: ignore
+
+  merge:
+    needs: [plan, render]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write # delete the chunk artifacts once merged
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    strategy:
+      matrix:
+        format: ${{ fromJSON(needs.plan.outputs.formats) }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: ${{ inputs.projects }}/${{ inputs.track }}
+      - name: Fetch the audio
+        run: node $STUDIO/tools/media.mjs fetch --projects "${{ inputs.projects }}" --track "${{ inputs.track }}" --only audio
+      - name: Fetch chunks from R2
+        if: env.HAS_R2 == 'true'
+        run: node $STUDIO/tools/r2.mjs get "runs/${{ github.run_id }}/${{ matrix.format }}/" out/chunks
+      - name: Fetch chunks from artifacts
+        if: env.HAS_R2 != 'true'
+        uses: actions/download-artifact@v8
+        with:
+          pattern: chunks-${{ matrix.format }}-*
+          path: out/chunks
+          merge-multiple: true
+      - name: Merge
+        id: merge
+        run: |
+          node $STUDIO/tools/merge.mjs $ARGS --format ${{ matrix.format }} --chunks-dir out/chunks --out out
+          file=$(ls out/*.mp4)
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$file")" >> "$GITHUB_OUTPUT"
+          echo "### ${{ inputs.track }} · ${{ matrix.format }} · ${{ inputs.res }}${{ inputs.fps }} · ${{ inputs.quality }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "$(du -h "$file" | cut -f1), $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$file")s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Delete chunk artifacts (the merged video replaces them)
+        if: env.HAS_R2 != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node $STUDIO/tools/artifacts.mjs delete --run ${{ github.run_id }} --prefix chunks-${{ matrix.format }}-
+      - name: Upload video to R2
+        if: env.HAS_R2 == 'true'
+        run: |
+          key="renders/${{ inputs.track }}/${{ github.run_id }}/${{ steps.merge.outputs.name }}"
+          node $STUDIO/tools/r2.mjs put "${{ steps.merge.outputs.file }}" "$key"
+          node $STUDIO/tools/r2.mjs rm "runs/${{ github.run_id }}/${{ matrix.format }}/"
+          link=$(node $STUDIO/tools/r2.mjs presign "$key" 604800)
+          echo "R2: \`$key\` · [download (7 days)]($link)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Copy video to Google Drive
+        if: env.HAS_DRIVE == 'true'
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+          DRIVE_DEST: ${{ vars.DRIVE_DEST || 'gdrive:Lyric Motion Studio' }}
+        run: |
+          curl -fsSL https://rclone.org/install.sh | bash > /dev/null
+          mkdir -p ~/.config/rclone && printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+          rclone copy "${{ steps.merge.outputs.file }}" "$DRIVE_DEST/${{ inputs.track }}/"
+          echo "Google Drive: \`$DRIVE_DEST/${{ inputs.track }}/${{ steps.merge.outputs.name }}\`" >> "$GITHUB_STEP_SUMMARY"
+      # archive: false keeps it a plain .mp4 (no zip); the release job (or a
+      # later Deliver run) takes it from here and deletes it
+      - name: Keep video as artifact
+        if: env.HAS_R2 != 'true' && (inputs.release || env.HAS_DRIVE != 'true')
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.merge.outputs.file }}
+          archive: false
+          retention-days: 7
+
+  release:
+    needs: merge
+    if: inputs.release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the draft release
+      actions: write # delete the video artifacts once released
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    steps:
+      - name: Fetch videos from R2
+        if: env.HAS_R2 == 'true'
+        run: node $STUDIO/tools/r2.mjs get "renders/${{ inputs.track }}/${{ github.run_id }}/" videos
+      - name: Fetch videos from artifacts
+        if: env.HAS_R2 != 'true'
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*.mp4'
+          path: videos
+          merge-multiple: true
+      - name: Create draft release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          ls -la videos
+          node $STUDIO/tools/release.mjs --tag "render-${{ github.run_id }}" \
+            --title "${{ inputs.track }} · ${{ inputs.res }}${{ inputs.fps }} ${{ inputs.quality }} · $(date -u +%Y-%m-%d)" \
+            --notes "Rendered by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Draft: only people with write access can see it." videos/*.mp4
+      - name: Delete video artifacts (the release holds them now)
+        if: env.HAS_R2 != 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node $STUDIO/tools/artifacts.mjs delete --run ${{ github.run_id }} --suffix .mp4
+
+  # Whatever happened: no chunks are left behind in R2 or as artifacts.
+  cleanup:
+    needs: [plan, render, merge, release]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    steps:
+      - name: Remove chunks from R2
+        if: env.HAS_R2 == 'true'
+        run: node $STUDIO/tools/r2.mjs rm "runs/${{ github.run_id }}/"
+      - name: Remove chunk artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node $STUDIO/tools/artifacts.mjs delete --run ${{ github.run_id }} --prefix chunks-

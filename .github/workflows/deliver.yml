@@ -1,0 +1,42 @@
+name: Deliver video
+
+# Reusable: puts the videos a render run kept as artifacts (no R2, or its
+# release step failed) into a draft release, then deletes the artifacts.
+# Render does this by itself; this is for running it again by hand.
+on:
+  workflow_call:
+    inputs:
+      run_id: { type: string, required: true, description: "ID of a 'Render video' run (the number in its URL)" }
+      title: { type: string, default: '' }
+      image: { type: string, default: '', description: "Studio image override (default: this version's)" }
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          pattern: '*.mp4'
+          path: videos
+          merge-multiple: true
+      - name: Create draft release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TITLE: ${{ inputs.title }}
+        run: |
+          ls -la videos
+          track=$(ls videos | head -1 | sed -E 's/-(wide|vertical)-.*//')
+          node /studio/tools/release.mjs --tag "render-${{ inputs.run_id }}" \
+            --title "${TITLE:-$track · render ${{ inputs.run_id }}}" \
+            --notes "Rendered by ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ inputs.run_id }}" videos/*.mp4
+      - name: Delete video artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node /studio/tools/artifacts.mjs delete --run ${{ inputs.run_id }} --suffix .mp4

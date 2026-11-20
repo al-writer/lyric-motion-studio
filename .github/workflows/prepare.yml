@@ -1,0 +1,86 @@
+name: Prepare tracks
+
+# Reusable: times every word on the vocal (Whisper) or from the LRC, analyses
+# the audio, probes the media, and commits <projects>/<slug>/build/ back to
+# the caller's branch. Call it on pushes that touch a project:
+#   uses: al-writer/lyric-motion-studio/.github/workflows/prepare.yml@vX.Y.Z
+# Without "tracks", tools/changed.mjs picks the projects of the last commit and
+# what they need: a full run when audio, lyrics or alignment settings changed,
+# only the manual fixes when only timing.json changed, nothing for a colour.
+on:
+  workflow_call:
+    inputs:
+      tracks: { type: string, default: '', description: 'Projects to prepare in full, space-separated (empty: from the last commit)' }
+      timing: { type: string, default: project, description: 'project | whisper | lrc' }
+      projects: { type: string, default: tracks, description: "Projects directory in the caller's repository" }
+      image: { type: string, default: '', description: "Studio image override (default: this version's)" }
+
+env:
+  STUDIO: /studio
+  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # commit build/
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Pick tracks
+        id: pick
+        env:
+          TRACKS: ${{ inputs.tracks }}
+        run: |
+          node $STUDIO/tools/changed.mjs --projects "${{ inputs.projects }}" --tracks "$TRACKS" | tee plan.txt
+          echo "slugs=$(cut -d' ' -f1 plan.txt | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v5
+        if: steps.pick.outputs.slugs != ''
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-models-v1
+
+      - name: Prepare
+        if: steps.pick.outputs.slugs != ''
+        env:
+          TIMING: ${{ inputs.timing }}
+          P: ${{ inputs.projects }}
+        run: |
+          while read -r slug mode; do
+            echo "::group::$slug ($mode)"
+            if [ "$mode" = overrides ]; then
+              python3 $STUDIO/tools/prepare.py "$slug" --projects "$P" --overrides-only
+            else
+              node $STUDIO/tools/media.mjs fetch --projects "$P" --track "$slug"
+              if [ -n "$TIMING" ] && [ "$TIMING" != project ]; then
+                python3 $STUDIO/tools/prepare.py "$slug" --projects "$P" --timing "$TIMING"
+              else
+                python3 $STUDIO/tools/prepare.py "$slug" --projects "$P"
+              fi
+            fi
+            node $STUDIO/tools/check.mjs --projects "$P" --track "$slug"
+            echo "::endgroup::"
+          done < plan.txt
+
+      - name: Commit build files
+        if: steps.pick.outputs.slugs != ''
+        env:
+          SLUGS: ${{ steps.pick.outputs.slugs }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ inputs.projects }}"/*/build
+          git diff --cached --quiet && { echo "nothing changed"; exit 0; }
+          set -- $SLUGS
+          if [ $# -eq 1 ]; then msg="chore($1): prepare build files"; else msg="chore: prepare build files of $(echo $SLUGS | sed 's/ /, /g')"; fi
+          git commit -m "$msg"
+          git push
