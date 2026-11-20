@@ -1,0 +1,33 @@
+{
+  "$schema": "../../schema/project.schema.json",
+  "studio": "^1",
+  "title": "Orange Ticket Stub",
+  "artist": "Qubit Quill",
+  "language": "en",
+  "audio": "https://raw.githubusercontent.com/al-writer/lyric-motion-studio/78296983d1a7ea66bd21833e543f84ddd341495a/tracks/orange-ticket-stub/song.mp3",
+  "lyrics": { "file": "lyrics.txt", "timing": "whisper", "highlight": "wipe", "italicSections": ["bridge"] },
+  "colors": { "text": "#fbf4ea", "accent": "#ff9a3c", "accentSoft": "#ffc27a" },
+  "template": "footage",
+  "media": {
+    "clouds": { "src": "assets/clouds.mp4" },
+    "fractal": { "src": "assets/fractal.mp4" },
+    "photo": { "src": "assets/photo.jpg" }
+  },
+  "scene": {
+    "background": {
+      "clips": [
+        { "media": "clouds", "at": 0, "loop": true },
+        { "media": "fractal", "at": "chorus", "loop": true, "speed": 0.5 },
+        { "media": "photo", "at": "bridge-2", "kenBurns": { "from": { "scale": 1.0, "x": 0.5, "y": 0.5 }, "to": { "scale": 1.35, "x": 0.62, "y": 0.42 } } },
+        { "media": "clouds", "at": "chorus#3", "loop": true, "in": 4 }
+      ],
+      "transition": { "type": "crossfade", "dur": 1.2 }
+    },
+    "filters": { "blur": 2, "brightness": 0.62, "contrast": 1.08, "saturate": 1.05, "grade": "teal-orange", "vignette": 0.6, "film": { "grain": 0.12, "flicker": 0.04, "dust": true, "weave": 0.6 } },
+    "lyrics": { "enter": "rise-blur", "exit": "fade-up", "previous": "dim" }
+  },
+  "vertical": {
+    "scene": { "lyrics": { "box": { "left": 80, "right": 150, "top": 900, "bottom": 560 } } }
+  },
+  "thumbnails": { "t": 66, "line": "Orange ticket stub", "highlight": "ticket" }
+}
