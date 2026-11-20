@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/al-writer/lyric-motion-studio/main/schema/project.schema.json",
+  "title": "Lyric Motion Studio project",
+  "description": "project.json of a track. Any key of the base object can be repeated under \"wide\" or \"vertical\" to apply to that format only.",
+  "type": "object",
+  "$defs": {
+    "box": {
+      "type": "object",
+      "description": "Area of the stage in CSS px (stage is 1920x1080, or 1080x1920 in 9:16).",
+      "properties": {
+        "left": { "type": "number" }, "right": { "type": "number" }, "top": { "type": "number" },
+        "bottom": { "type": "number" }, "height": { "type": "number" }, "width": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "time": {
+      "description": "Seconds, or a section (\"chorus\", \"chorus#2\"), \"line:12\", \"start\", \"end\", optionally \"+1.5\" / \"-2\".",
+      "type": ["number", "string"]
+    },
+    "pose": {
+      "type": "object",
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "scale": { "type": "number" }, "rotate": { "type": "number" } },
+      "additionalProperties": false
+    },
+    "component": { "type": "string", "pattern": "^(components/)?[^/]+\\.(jsx?|tsx?)$", "description": "File in the project's components/ folder." },
+    "media": {
+      "type": "object",
+      "properties": {
+        "src": { "type": "string", "description": "Path in the project, r2://<key> (bucket from the R2 secrets) or https://…" },
+        "sha256": { "type": "string" }
+      },
+      "required": ["src"],
+      "additionalProperties": false
+    },
+    "layer": {
+      "type": "object",
+      "properties": {
+        "component": { "$ref": "#/$defs/component" },
+        "z": { "enum": ["background", "behind-hero", "above-hero", "above-lyrics", "top"] },
+        "props": { "type": "object" }
+      },
+      "required": ["component"],
+      "additionalProperties": false
+    },
+    "filters": {
+      "type": "object",
+      "description": "Picture filters. Constant ones (blur, brightness, contrast, saturate, hue, grade, sepia) are baked into extracted video frames by ffmpeg; animated ones (grain, flicker, vhs) are drawn per frame.",
+      "properties": {
+        "blur": { "type": "number", "description": "px at stage scale" },
+        "brightness": { "type": "number" }, "contrast": { "type": "number" }, "saturate": { "type": "number" },
+        "hue": { "type": "number", "description": "degrees" },
+        "sepia": { "type": "number" },
+        "grade": { "enum": ["none", "teal-orange", "warm", "cool", "mono", "faded"] },
+        "vignette": { "type": "number" },
+        "film": {
+          "type": ["object", "boolean"],
+          "properties": { "grain": { "type": "number" }, "flicker": { "type": "number" }, "dust": { "type": "boolean" }, "weave": { "type": "number" } },
+          "additionalProperties": false
+        },
+        "vhs": {
+          "type": ["object", "boolean", "null"],
+          "properties": { "scanlines": { "type": "number" }, "chroma": { "type": "number" }, "jitter": { "type": "number" }, "noise": { "type": "number" } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "scene": {
+      "type": "object",
+      "description": "Template options; see the template's defaults in engine/src/templates/<name>/defaults.js.",
+      "properties": {
+        "component": { "$ref": "#/$defs/component", "description": "custom template: the component that draws the frame" },
+        "fade": { "type": "object", "properties": { "in": { "type": "number" }, "out": { "type": "number" } }, "additionalProperties": false },
+        "backdrop": { "type": ["object", "null"], "properties": { "component": { "$ref": "#/$defs/component" } }, "additionalProperties": false },
+        "hero": {
+          "type": "object",
+          "properties": {
+            "component": { "anyOf": [{ "$ref": "#/$defs/component" }, { "type": "null" }] },
+            "type": { "enum": ["auto", "none"] },
+            "size": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+            "poster": { "type": "number", "description": "t at which the hero is drawn on thumbnails" },
+            "poses": { "type": "object", "additionalProperties": { "$ref": "#/$defs/pose" } },
+            "pose": {
+              "type": "object",
+              "properties": {
+                "default": { "type": "string" },
+                "bySection": { "type": "object", "additionalProperties": { "type": "string" } },
+                "breaks": { "type": "object", "properties": { "gap": { "type": "number" }, "pose": { "type": "string" } }, "additionalProperties": false }
+              },
+              "additionalProperties": false
+            },
+            "spring": { "type": "object", "properties": { "stiffness": { "type": "number" }, "damping": { "type": "number" }, "mass": { "type": "number" } }, "additionalProperties": false }
+          },
+          "additionalProperties": false
+        },
+        "lyrics": { "type": "object", "description": "Lyric layout of the template (box, layout, sizes, enter/exit styles)." },
+        "acts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string", "description": "section: starts after the line before its first line ends" },
+              "at": { "type": "number" },
+              "after": { "type": "number" },
+              "until": { "$ref": "#/$defs/time" },
+              "hero": { "type": "string", "description": "pose" },
+              "lyrics": { "type": "string", "description": "caption | none | a layout" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "caption": { "type": "object", "properties": { "box": { "$ref": "#/$defs/box" }, "size": { "type": "number" } }, "additionalProperties": false },
+        "reactive": {
+          "type": "object",
+          "properties": {
+            "dots": { "type": "boolean" }, "glow": { "type": "boolean" }, "tilt": { "type": "boolean" }, "motes": { "type": "boolean" },
+            "rings": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "spectrum": {
+          "type": "object",
+          "properties": {
+            "show": { "type": "boolean" }, "style": { "enum": ["mirror", "bars"] }, "progress": { "type": "boolean" },
+            "box": { "type": "object", "properties": { "side": { "type": "number" }, "bottom": { "type": "number" } }, "additionalProperties": false }
+          },
+          "additionalProperties": false
+        },
+        "vignette": { "type": "number" },
+        "grain": { "type": "number" },
+        "layers": { "type": "array", "items": { "$ref": "#/$defs/layer" } },
+        "background": { "type": "object", "description": "footage template: clips and photos" },
+        "filters": { "$ref": "#/$defs/filters" },
+        "titleCard": { "type": ["object", "boolean"] },
+        "cover": { "type": "object", "description": "minimal template: cover art placement" }
+      }
+    },
+    "formatBlock": {
+      "type": "object",
+      "properties": {
+        "fonts": { "$ref": "#/properties/fonts" }, "colors": { "$ref": "#/properties/colors" },
+        "lyrics": { "$ref": "#/properties/lyrics" }, "scene": { "$ref": "#/$defs/scene" },
+        "thumbnails": { "$ref": "#/properties/thumbnails" }, "promo": { "$ref": "#/properties/promo" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "studio": { "type": "string", "description": "Studio major version the project is made for, e.g. \"^1\"." },
+    "title": { "type": "string" },
+    "artist": { "type": "string" },
+    "language": { "type": "string", "description": "ISO 639-1 code; picks the Whisper model and language." },
+    "audio": { "type": "string", "description": "Song: path in the project, r2://<key> or https://…" },
+    "audioSha256": { "type": "string" },
+    "template": { "enum": ["illustrated", "footage", "minimal", "custom"] },
+    "director": { "$ref": "#/$defs/component", "description": "Module whose default export (ctx) => { pose, lyrics, … } overrides the direction per frame." },
+    "fonts": {
+      "type": "object",
+      "properties": { "body": { "type": "string" }, "display": { "type": "string" }, "hand": { "type": "string" } },
+      "additionalProperties": { "type": "string" }
+    },
+    "colors": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" }, "accent": { "type": "string" }, "accentSoft": { "type": "string" },
+        "glow": { "type": "string", "pattern": "^\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*$" }, "mote": { "type": "string" }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": { "base": { "type": "string" }, "glow": { "type": "string" }, "glow2": { "type": "string" } },
+        "additionalProperties": false
+      }
+    },
+    "lyrics": {
+      "type": "object",
+      "properties": {
+        "file": { "type": ["string", "null"] },
+        "timing": { "enum": ["whisper", "lrc"] },
+        "whisperModel": { "type": "string" },
+        "highlight": { "enum": ["word", "line", "wipe", "none"] },
+        "lead": { "type": "number" }, "hold": { "type": "number" }, "creditsLead": { "type": "number" },
+        "emphasis": { "type": "array", "items": { "type": "string" } },
+        "pop": { "type": "array", "items": { "type": "string" } },
+        "italicSections": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "media": { "type": "object", "additionalProperties": { "$ref": "#/$defs/media" } },
+    "scene": { "$ref": "#/$defs/scene" },
+    "thumbnails": {
+      "type": "object",
+      "properties": {
+        "component": { "$ref": "#/$defs/component" },
+        "tag": { "type": "string" }, "line": { "type": "string" }, "highlight": { "type": "string" },
+        "t": { "type": "number" },
+        "variants": { "type": "object" }
+      }
+    },
+    "promo": {
+      "type": "object",
+      "properties": {
+        "hook": { "type": "string" }, "badge": { "type": "string" },
+        "highlight": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "wide": { "$ref": "#/$defs/formatBlock" },
+    "vertical": { "$ref": "#/$defs/formatBlock" }
+  },
+  "required": ["title", "audio"],
+  "additionalProperties": false
+}
