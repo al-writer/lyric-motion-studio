@@ -60,8 +60,10 @@ export async function prepareFrames(o, fa, fb, out) {
   const bg = cfg.scene?.background
   if (!bg?.clips?.length) return false
   const lines = JSON.parse(readFileSync(join(o.dir, 'build/lyrics.json'), 'utf8')).lines
-  await fetchMedia(o.dir, { quiet: true })
-  const info = JSON.parse(readFileSync(join(o.dir, 'build/media.json'), 'utf8'))
+  // only the clips' media (not the song) is needed here
+  await fetchMedia(o.dir, { quiet: true, only: [...new Set(bg.clips.map((c) => c.media))] })
+  const infoFile = join(o.dir, 'build/media.json')
+  const info = existsSync(infoFile) ? JSON.parse(readFileSync(infoFile, 'utf8')) : {}
   const clips = resolveClips(bg, { lines, duration: o.duration, media: cfg.media })
   const dpr = o.dpr
   const [W, H] = o.format === 'vertical' ? [1080, 1920] : [1920, 1080]
