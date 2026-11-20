@@ -10,6 +10,9 @@
 // LMS_TRACK     build only this project (renders do; the dev server lists all)
 import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
 import { extname, join, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const STUDIO = fileURLToPath(new URL('../..', import.meta.url))
 
 export const MIME = {
   '.html': 'text/html',
@@ -104,7 +107,8 @@ export default function lms({ projects, track }) {
   const ID = 'virtual:lms-projects'
   return {
     name: 'lms-projects',
-    config: () => ({ server: { fs: { allow: [dir] } } }),
+    // the dev server may read the studio itself and the projects folder
+    config: () => ({ server: { fs: { allow: [STUDIO, dir] } } }),
     resolveId: (id) => (id === ID ? '\0' + ID : null),
     load(id) {
       if (id !== '\0' + ID) return null

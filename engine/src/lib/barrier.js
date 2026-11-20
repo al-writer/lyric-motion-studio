@@ -5,7 +5,7 @@ const pending = new Set()
 
 export function hold(promise) {
   pending.add(promise)
-  promise.finally(() => pending.delete(promise))
+  promise.finally(() => pending.delete(promise)).catch(() => {})
   return promise
 }
 

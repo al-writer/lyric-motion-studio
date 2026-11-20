@@ -16,6 +16,8 @@ export const HIGHLIGHT = q.get('highlight')
 export const DEBUG = q.has('debug')
 // output pixels per stage pixel (render.mjs passes it; 1 in the preview)
 export const DPR = Number(q.get('dpr')) || 1
+// render frame rate (render.mjs passes it; video backgrounds pick frame round(t * FPS))
+export const FPS = Number(q.get('fps')) || 30
 
 // Stage size in CSS px. Every output size (HD to 8K) is this stage at a
 // device scale factor, so text and SVG stay vector-sharp.
