@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { H, W } from './format.js'
 import { rng } from './clock.js'
+import { glow } from './track.js'
 
 // Background layers shared by the player and the thumbnail.
 export function Background({ track, section, t }) {
@@ -49,10 +50,10 @@ export function Motes({ track, t }) {
           width: m.size,
           height: m.size,
           borderRadius: '50%',
-          background: '#ffc58a',
+          background: track.scene.colors.mote,
           opacity: Math.min(1, m.alpha * sparkle * (0.6 + 0.4 * Math.sin(t * 1.3 + m.phase))),
           filter: m.size > 5 ? 'blur(1.5px)' : 'none',
-          boxShadow: '0 0 12px rgba(255,170,90,0.6)',
+          boxShadow: `0 0 12px ${glow(track.scene, 0.6)}`,
         }}
       />
     )

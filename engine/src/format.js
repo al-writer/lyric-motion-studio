@@ -27,3 +27,7 @@ export const SPECTRUM_BOX = VERTICAL ? { side: 110, bottom: 400 } : { side: 120,
 
 // Lyric wheel geometry (radius of the virtual cylinder, font sizes).
 export const WHEEL = VERTICAL ? { R: 470, gap: 30, size: 66, titleSize: 62 } : { R: 380, gap: 34, size: 74, titleSize: 70 }
+
+// Finale (scene.finale): the hero stays centred and each remaining line is
+// shown on its own, smaller, in this band above it.
+export const CAPTION_BOX = VERTICAL ? { left: 80, right: 140, top: 400, height: 150, size: 54 } : { left: 200, right: 200, top: 120, height: 140, size: 58 }

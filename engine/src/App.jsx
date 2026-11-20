@@ -9,6 +9,7 @@ import SingleLine from './SingleLine.jsx'
 import { DotGrid, Spectrum } from './Reactive.jsx'
 import { Background, Grain, Motes } from './Scenery.jsx'
 import Thumbnail from './Thumbnail.jsx'
+import Caption from './Caption.jsx'
 
 const LEAD = 0.45 // a line becomes current this long before its first word
 const HOLD = 2.4 // and stays current at most this long after its last word
@@ -32,22 +33,28 @@ function useStageState(track, t) {
 
     let pose = section === 'chorus' || section === 'outro' ? 'chorus' : 'side'
     if (cur < 0 && gapAhead > 3) pose = 'center'
+    // finale: from the first line of scene.finale.from on, the hero stays centred
+    const fi = track.scene.finale ? lines.findIndex((l) => l.section === track.scene.finale.from) : -1
+    const finale = fi > 0 && t >= lines[fi - 1].e + (track.scene.finale.after ?? 0.8)
+    if (finale) pose = 'center'
     const showCredits = t < lines[0].t - CREDITS_LEAD || (ended && t > lines.at(-1).e + 2)
-    return { cur, section, pose, showCredits }
+    return { cur, section, pose, showCredits, finale }
   }, [track, t])
 }
 
 function Stage({ track, t }) {
-  const { cur, section, pose, showCredits } = useStageState(track, t)
+  const { cur, section, pose, showCredits, finale } = useStageState(track, t)
   const { scene } = track
   const r = scene.reactive
   const fade = Math.min(1, t / scene.fadeIn, Math.max(0, (track.duration - t) / scene.fadeOut))
   return (
     <div style={{ position: 'relative', width: W, height: H, overflow: 'hidden', color: scene.colors.text }}>
       <Background track={track} section={section} t={t} />
+      {track.Backdrop && <track.Backdrop track={track} t={t} section={section} cur={cur} />}
       {r.dots && <DotGrid track={track} t={t} />}
       {r.motes && <Motes track={track} t={t} />}
-      <Hero track={track} t={t} pose={pose} showCredits={showCredits} rings={cur >= 0 && r.rings.includes(section)} />
+      <Hero track={track} t={t} pose={pose} section={section} cur={cur} showCredits={showCredits} rings={cur >= 0 && r.rings.includes(section)} />
+      {finale && <Caption track={track} t={t} cur={cur} />}
       {scene.layout === 'single' ? (
         <SingleLine track={track} t={t} cur={cur} />
       ) : (

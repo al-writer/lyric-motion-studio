@@ -50,9 +50,11 @@ export const DEFAULT_SCENE = {
   artist: '',
   layout: 'wheel', // wheel | single
   fonts: { body: 'Fraunces Variable', display: 'Space Mono', hand: 'Caveat' },
-  colors: { text: '#f7ead9', accent: '#ff8a2a', accentSoft: '#ffb470' },
+  // glow: "r,g,b" of every halo (hero, bass glow, rings, active word); mote: colour of the drifting specks
+  colors: { text: '#f7ead9', accent: '#ff8a2a', accentSoft: '#ffb470', glow: '255,138,42', mote: '#ffc58a' },
   palette: DEFAULT_PALETTE,
   hero: { type: 'cover' }, // cover | component (+ file) | none
+  backdrop: null, // { file: 'X.jsx' }: the track's own full-stage scenery, drawn behind the hero
   emphasis: [], // regexes: lines drawn in the display font, accent colour
   pop: [], // regexes: lines whose words pop in with a spring
   italicSections: ['bridge'],
@@ -80,6 +82,7 @@ export async function loadTrack(slug) {
     reactive: { ...DEFAULT_SCENE.reactive, ...scene.reactive },
   }
   const Hero = merged.hero.type === 'component' ? await pick(heroes, slug, merged.hero.file) : null
+  const Backdrop = merged.backdrop?.file ? await pick(heroes, slug, merged.backdrop.file) : null
   const re = (list) => list.map((s) => new RegExp(s, 'i'))
   return {
     slug,
@@ -92,11 +95,15 @@ export async function loadTrack(slug) {
     coverUrl: cover,
     songUrl: song,
     Hero,
+    Backdrop,
     emphasis: re(merged.emphasis),
     pop: re(merged.pop),
     vertical: VERTICAL,
   }
 }
+
+// rgba() of the scene's glow colour
+export const glow = (scene, a) => `rgba(${scene.colors.glow},${typeof a === 'number' ? a.toFixed(3) : a})`
 
 export const lineText = (line) => line.words.map((w) => w.w).join(' ')
 export const isEmphasis = (track, line) => track.emphasis.some((r) => r.test(lineText(line)))

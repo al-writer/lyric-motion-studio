@@ -24,7 +24,7 @@ video** from the Actions tab.
 Lines should be written the way they are sung: repeat a chorus where it is
 repeated, split very long lines. The lyrics file supplies the text; Whisper
 only supplies the timestamps. To trust an LRC file's own timestamps instead,
-set `"timing": "lrc"`.
+set `"timing": "lrc"`. Words without their own `<mm:ss>` tag are spread by syllables; a bare `[mm:ss.xx]` line marks where the previous line ends (before a break).
 
 ## scene.json
 
@@ -47,9 +47,12 @@ set `"timing": "lrc"`.
 | --- | --- |
 | `layout` | `wheel` (picker-style column of lines) or `single` (one line at a time) |
 | `hero` | `{ "type": "cover" }` (art embedded in the audio file, default), `{ "type": "component", "file": "X.jsx", "size": [w, h] }`, or `{ "type": "none" }` |
+| `backdrop` | `{ "file": "X.jsx" }`: the track's own full-stage scenery behind the hero, gets `{ track, t, section, cur }` (e.g. `tracks/kara-kargam/scene/Night.jsx`). Hero components get the same props |
+| `colors` | `text`, `accent`, `accentSoft`, plus `glow` (`"r,g,b"` of every halo) and `mote` |
+| `finale` | `{ "from": "bridge" }`: once that section starts the hero stays centred and the remaining lines are shown one at a time, smaller, above it |
 | `emphasis` / `pop` | regexes over a line's text: emphasised lines use the display font and accent colour; pop lines spring word by word |
 | `palette` | per-section background: `{ "chorus": { "base": "#250d12", "glow": "rgba(…)", "glow2": "rgba(…)" } }` for `intro`, `verse`, `pre`, `chorus`, `bridge`, `outro` |
-| `fonts` | `body`, `display`, `hand`: bundled are Fraunces Variable, Inter Variable, Space Mono, Caveat |
+| `fonts` | `body`, `display`, `hand`: bundled are Fraunces Variable, Inter Variable, Space Mono, Caveat, and for Cyrillic incl. Kazakh: Lora Variable, Rubik Variable (also Inter, Caveat) |
 | `language`, `whisperModel`, `timing` | alignment settings (`en` uses `small.en`, other languages `small`) |
 | `fadeIn`, `fadeOut` | seconds from / to black |
 
@@ -82,8 +85,11 @@ Where the video goes:
   (default `gdrive:Lyric Motion Studio`).
 - Neither: the *Deliver video* workflow puts the videos into a **draft
   release** as plain `.mp4` files (resumable downloads, visible only to people
-  with write access). Delete the draft after downloading. It can also be run
-  by hand with the ID of an older render run.
+  with write access). Chunk artifacts are deleted as soon as they are
+  merged, and the video artifact once it is in the release, so Actions
+  storage only holds a render while it runs; the drafts are the archive.
+  Deliver can also be run by hand with the ID of a render run whose video
+  artifact is still there (kept 7 days if delivery failed).
 
 **Locally.** Needs Node 20+, Python 3.10+ and ffmpeg.
 

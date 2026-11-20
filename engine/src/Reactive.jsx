@@ -1,4 +1,5 @@
 import { SPECTRUM_BOX, W } from './format.js'
+import { glow } from './track.js'
 
 // Audio-reactive layers. Everything is a pure function of t, so the
 // renderer's frame-by-frame output matches live playback.
@@ -35,7 +36,7 @@ export function BassGlow({ track, t, x, y }) {
         top: y - 500,
         width: 1400,
         height: 1000,
-        background: 'radial-gradient(closest-side, rgba(255,130,40,0.55), transparent)',
+        background: `radial-gradient(closest-side, ${glow(track.scene, 0.55)}, transparent)`,
         opacity: 0.08 + 0.32 * bass ** 1.5,
       }}
     />
@@ -59,7 +60,7 @@ export function BeatRings({ track, t, x, y }) {
             width: size,
             height: size,
             borderRadius: '50%',
-            border: `${2 - p}px solid rgba(255,170,100,${(0.42 * s * (1 - p) ** 2).toFixed(3)})`,
+            border: `${2 - p}px solid ${glow(track.scene, 0.42 * s * (1 - p) ** 2)}`,
             pointerEvents: 'none',
           }}
         />
