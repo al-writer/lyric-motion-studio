@@ -1,4 +1,4 @@
-import { VERTICAL } from './params.js'
+import { HIGHLIGHT, VERTICAL } from './params.js'
 
 // Every track folder is discovered at build time; only the chosen one is loaded.
 const scenes = import.meta.glob('@tracks/*/scene.json', { import: 'default' })
@@ -58,6 +58,7 @@ export const DEFAULT_SCENE = {
   emphasis: [], // regexes: lines drawn in the display font, accent colour
   pop: [], // regexes: lines whose words pop in with a spring
   italicSections: ['bridge'],
+  highlight: 'word', // word: karaoke, each word lights up as it is sung | line: the whole current line lights up
   reactive: { dots: true, glow: true, tilt: true, motes: true, spectrum: true, rings: ['chorus'] },
   fadeIn: 1.5,
   fadeOut: 2.5,
@@ -81,6 +82,7 @@ export async function loadTrack(slug) {
     palette: { ...DEFAULT_PALETTE, ...scene.palette },
     reactive: { ...DEFAULT_SCENE.reactive, ...scene.reactive },
   }
+  if (HIGHLIGHT) merged.highlight = HIGHLIGHT
   const Hero = merged.hero.type === 'component' ? await pick(heroes, slug, merged.hero.file) : null
   const Backdrop = merged.backdrop?.file ? await pick(heroes, slug, merged.backdrop.file) : null
   const re = (list) => list.map((s) => new RegExp(s, 'i'))

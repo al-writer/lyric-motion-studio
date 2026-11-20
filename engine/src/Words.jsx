@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { glow } from './track.js'
 
-// Word-by-word highlight shared by both lyric layouts.
+// Highlight shared by both lyric layouts: word by word (karaoke) or, with
+// scene.highlight "line", the whole current line at once (plain lyric video).
 export function lineStyle(track, line, { size, titleSize }) {
   const { fonts } = track.scene
   if (line.emphasis)
@@ -24,7 +25,23 @@ export function Words({ track, line, t, current }) {
     future: { opacity: 0.25, y: 0, color: base, textShadow: halo(0) },
     active: { opacity: 1, y: -6, color: accentSoft, textShadow: halo(0.85) },
     past: { opacity: 1, y: 0, color: base, textShadow: halo(0) },
+    line: { opacity: 1, y: 0, color: accentSoft, textShadow: halo(0.6) },
   }
+  if (track.scene.highlight === 'line')
+    return line.words.map((w, i) => (
+      <span key={i}>
+        {i > 0 && ' '}
+        <motion.span
+          initial={false}
+          variants={variants}
+          animate={current ? 'line' : 'past'}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          style={{ display: 'inline-block' }}
+        >
+          {w.w}
+        </motion.span>
+      </span>
+    ))
   let active = -1
   if (current) line.words.forEach((w, i) => w.t <= t && (active = i))
   return line.words.map((w, i) => {

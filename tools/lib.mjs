@@ -25,6 +25,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     workers: Number(opt.workers ?? Math.max(1, Math.min(3, cpus().length - 1))),
     stills: opt.stills && opt.stills !== true ? opt.stills.split(',').map(Number) : null,
     thumbnail: opt.thumbnail ? (opt.thumbnail === true ? 'hero,line,macro' : opt.thumbnail).split(',') : null,
+    highlight: opt.highlight ?? null, // word | line: overrides scene.json
     dist: opt.dist ?? 'dist',
     out: opt.out ?? 'out',
   }
@@ -32,11 +33,12 @@ export function parseArgs(argv = process.argv.slice(2)) {
   if (!['wide', 'vertical'].includes(o.format)) throw new Error(`bad --format ${o.format}`)
   if (!['1080p', '4k'].includes(o.res)) throw new Error(`bad --res ${o.res}`)
   if (!QUALITY[o.quality]) throw new Error(`bad --quality ${o.quality}`)
+  if (o.highlight && !['word', 'line'].includes(o.highlight)) throw new Error(`bad --highlight ${o.highlight}`)
   const audio = JSON.parse(readFileSync(`${ROOT}tracks/${o.track}/build/audio.json`, 'utf8'))
   o.duration = audio.duration
   o.from = o.range?.[0] ?? 0
   o.to = Math.min(o.range?.[1] ?? o.duration, o.duration)
-  o.name = `${o.track}-${o.format}-${o.res}${o.fps}${o.range ? `-${o.from}-${o.to}` : ''}`
+  o.name = `${o.track}-${o.format}-${o.res}${o.fps}${o.range ? `-${o.from}-${o.to}` : ''}${o.highlight === 'line' ? '-lines' : ''}`
   o.chunksDir = opt['chunks-dir'] ?? `${o.out}/chunks-${o.name}`
   return o
 }
