@@ -1,0 +1,8 @@
+.git
+node_modules
+dist
+out
+tracks
+**/.media
+**/__pycache__
+.github
