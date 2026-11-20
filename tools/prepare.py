@@ -407,7 +407,9 @@ def main():
     out.mkdir(exist_ok=True)
 
     if args.overrides_only:
-        saved = json.loads((out / "aligned.json").read_text())
+        # projects prepared before aligned.json existed start from their lyrics.json
+        base = out / "aligned.json" if (out / "aligned.json").exists() else out / "lyrics.json"
+        saved = json.loads(base.read_text())
         finish(saved["lines"], saved["timing"], tdir, out)
         print(f"re-applied timing.json to {len(saved['lines'])} lines")
         return
