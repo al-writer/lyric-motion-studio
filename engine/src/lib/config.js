@@ -15,7 +15,10 @@ export function merge(...layers) {
 const FORMATS = ['wide', 'vertical']
 const withoutFormats = (o) => Object.fromEntries(Object.entries(o ?? {}).filter(([k]) => !FORMATS.includes(k) && k !== '$schema'))
 
-export const STUDIO_MAJOR = 1
+// set by release-please; projects declare the major they need ("studio": "^1")
+export const STUDIO_VERSION = '0.9.0' // x-release-please-version
+// the first release is 1.0.0: until then the code already is studio 1
+export const STUDIO_MAJOR = Math.max(1, Number(STUDIO_VERSION.split('.')[0]))
 
 export const ENGINE_DEFAULTS = {
   title: '',

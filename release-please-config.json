@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "78296983d1a7ea66bd21833e543f84ddd341495a",
+  "pull-request-title-pattern": "chore(release): v${version}",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "lyric-motion-studio",
+      "include-component-in-tag": false,
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        { "type": "generic", "path": ".github/workflows/render.yml" },
+        { "type": "generic", "path": ".github/workflows/prepare.yml" },
+        { "type": "generic", "path": ".github/workflows/deliver.yml" },
+        { "type": "generic", "path": "README.md" },
+        { "type": "generic", "path": "engine/src/lib/config.js" }
+      ]
+    }
+  }
+}

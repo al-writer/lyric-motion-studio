@@ -1,0 +1,35 @@
+name: Release
+
+# release-please reads the Conventional Commits on main and keeps a release
+# pull request open (version bump, CHANGELOG.md, the image tag in the
+# reusable workflows). Merging it tags vX.Y.Z, publishes the GitHub release
+# and builds the studio image with that version.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      created: ${{ steps.rp.outputs.release_created }}
+      version: ${{ steps.rp.outputs.version }}
+      major: ${{ steps.rp.outputs.major }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  image:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    uses: ./.github/workflows/image.yml
+    with:
+      tags: v${{ needs.release-please.outputs.version }} v${{ needs.release-please.outputs.major }} latest
