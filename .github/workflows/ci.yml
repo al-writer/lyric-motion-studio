@@ -1,0 +1,56 @@
+name: CI
+
+# Conventional Commits (commits and the pull request title, which becomes
+# the squash commit), unit tests, project checks, an engine build and a few
+# stills of the examples.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm i --no-save --no-audit --no-fund @commitlint/cli@19 @commitlint/config-conventional@19
+      - name: Commit messages
+        env:
+          FROM: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: npx commitlint --from "$FROM" --to HEAD --verbose
+      - name: Pull request title
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: echo "$TITLE" | npx commitlint --verbose
+
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v5
+      - run: apt-get update -qq && apt-get install -y -qq ffmpeg python3-pip python3-venv > /dev/null
+      - run: npm ci --no-audit --no-fund
+      - run: npx vitest run
+      - run: python3 -m venv /tmp/venv && /tmp/venv/bin/pip install -q numpy pytest && /tmp/venv/bin/python -m pytest -q test
+      - run: node tools/check.mjs
+      - name: Stills of the examples
+        run: |
+          node tools/render.mjs --track orange-ticket-stub --stills 8,66 --out out
+          node tools/render.mjs --track orange-ticket-stub --format vertical --stills 66 --out out
+          node tools/render.mjs --track footage-demo --stills 66 --out out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: stills
+          path: out/*.png
+          retention-days: 7
