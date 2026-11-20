@@ -6,7 +6,7 @@ import { Layers } from '../../blocks/Layers.jsx'
 // "scene": { "component": "Poster.jsx" }; the engine adds grain, the project's
 // extra layers and the fade to black. Its thumbnails come from
 // "thumbnails": { "component": "Covers.jsx", "variants": {…} }.
-function Scene() {
+export default function Scene() {
   const s = useScene()
   const sc = s.cfg.scene
   const Stage = s.track.component(sc.component)
@@ -22,6 +22,3 @@ function Scene() {
   )
 }
 
-const defaults = { scene: { component: null, grain: 0.09, fade: { in: 1.5, out: 2.5 }, layers: [] } }
-
-export default { name: 'custom', Scene, Thumbnail: null, defaults }
