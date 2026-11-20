@@ -1,10 +1,10 @@
 // Joins rendered chunks and the track's audio into out/<name>.mp4.
-//   node tools/merge.mjs --track <slug> [same options as render.mjs]
+//   node tools/merge.mjs --track <slug> [--projects tracks] [same options as render.mjs]
 import { spawn } from 'node:child_process'
-import { existsSync, readdirSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { ROOT, parseArgs, plan } from './lib.mjs'
+import { audioFile, parseArgs, plan } from './lib.mjs'
 
 const run = (args) => new Promise((r, j) => spawn('ffmpeg', args, { stdio: 'inherit' }).on('close', (c) => (c ? j(new Error(`ffmpeg exited ${c}`)) : r())))
 
@@ -22,8 +22,7 @@ export async function merge(o) {
   }
   if (at !== last) throw new Error(`missing frames ${at}-${last} in ${o.chunksDir}`)
 
-  const dir = `${ROOT}tracks/${o.track}`
-  const song = ['mp3', 'wav', 'm4a', 'flac'].map((e) => `${dir}/song.${e}`).find(existsSync)
+  const song = audioFile(o.dir, o.project)
   await writeFile(`${o.chunksDir}/list.txt`, files.map((f) => `file '${f}'`).join('\n'))
   const out = `${o.out}/${o.name}.mp4`
   // A clip cut from the middle of the song fades its audio in and out

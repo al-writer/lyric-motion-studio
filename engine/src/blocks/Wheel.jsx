@@ -1,16 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { motion, useSpring, useTransform } from 'framer-motion'
-import { LYRICS_BOX, WHEEL } from './format.js'
+import { useScene } from '../lib/scene.jsx'
 import { Words, lineStyle } from './Words.jsx'
 
 // iPhone-picker style lyric wheel: every line sits on a virtual cylinder and
 // the column springs one notch up whenever the next line starts. Long lines
 // wrap into two balanced, tight rows.
-const R = WHEEL.R // cylinder radius, px
-const GAP = WHEEL.gap // space between lines, px
-const SCROLL_LEAD = 0.3 // start scrolling this long before the first word
+//   box    { left, right, top, bottom } in stage px
+//   wheel  { R: cylinder radius, gap, size, titleSize, scrollLead }
 
-function WheelLine({ track, line, center, y, t, current, measureRef }) {
+function WheelLine({ line, center, y, current, measureRef, wheel }) {
+  const { cfg } = useScene()
+  const R = wheel.R
   // d: distance of this line's centre from the wheel's centre, px
   const d = useTransform(y, (v) => center + v)
   const theta = useTransform(d, (v) => Math.max(-1.45, Math.min(1.45, v / R)))
@@ -34,16 +35,17 @@ function WheelLine({ track, line, center, y, t, current, measureRef }) {
         textAlign: 'center',
         textWrap: 'balance',
         lineHeight: 1.04,
-        marginBottom: GAP,
-        ...lineStyle(track, line, WHEEL),
+        marginBottom: wheel.gap,
+        ...lineStyle(cfg, line, wheel),
       }}
     >
-      <Words track={track} line={line} t={t} current={current} />
+      <Words line={line} current={current} />
     </motion.div>
   )
 }
 
-export default function Wheel({ track, t, cur, visible }) {
+export default function Wheel({ box, wheel, visible = true }) {
+  const { t, track, cfg, lyric } = useScene()
   const refs = useRef([])
   const [centers, setCenters] = useState(null)
 
@@ -54,17 +56,17 @@ export default function Wheel({ track, t, cur, visible }) {
         refs.current.map((el) => {
           const h = el.offsetHeight
           const c = top + h / 2
-          top += h + GAP
+          top += h + wheel.gap
           return c
         })
       )
     }
     measure()
     document.fonts.ready.then(measure)
-  }, [])
+  }, [wheel.gap])
 
   let focus = 0
-  track.lines.forEach((l, i) => l.t - SCROLL_LEAD <= t && (focus = i))
+  track.lines.forEach((l, i) => l.t - (wheel.scrollLead ?? 0.3) <= t && (focus = i))
 
   const y = useSpring(0, { stiffness: 90, damping: 17, mass: 1 })
   const placed = useRef(false)
@@ -81,8 +83,8 @@ export default function Wheel({ track, t, cur, visible }) {
       transition={{ duration: 1.2, ease: 'easeInOut' }}
       style={{
         position: 'absolute',
-        ...LYRICS_BOX,
-        color: track.scene.colors.text,
+        ...box,
+        color: cfg.colors.text,
         maskImage: 'linear-gradient(transparent 4%, #000 26%, #000 74%, transparent 96%)',
       }}
     >
@@ -91,12 +93,11 @@ export default function Wheel({ track, t, cur, visible }) {
         {track.lines.map((line, i) => (
           <WheelLine
             key={i}
-            track={track}
             line={line}
+            wheel={wheel}
             center={centers?.[i] ?? 0}
             y={y}
-            t={t}
-            current={i === cur}
+            current={i === lyric.cur}
             measureRef={(el) => (refs.current[i] = el)}
           />
         ))}

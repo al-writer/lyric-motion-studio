@@ -1,12 +1,13 @@
 // Prints the parts of a YouTube description that come from a prepared track:
 // chapters (from the lyric sections) and the lyrics themselves.
-//   node tools/youtube.mjs --track <slug>
-// Upload tracks/<slug>/build/lyrics.srt as subtitles for synced lyrics.
+//   node tools/youtube.mjs --track <slug> [--projects tracks]
+// Upload <project>/build/lyrics.srt as subtitles for synced lyrics.
 import { readFileSync } from 'node:fs'
-import { ROOT, parseArgs } from './lib.mjs'
+import { join } from 'node:path'
+import { parseArgs } from './lib.mjs'
 
 const o = parseArgs()
-const { lines } = JSON.parse(readFileSync(`${ROOT}tracks/${o.track}/build/lyrics.json`, 'utf8'))
+const { lines } = JSON.parse(readFileSync(join(o.dir, 'build/lyrics.json'), 'utf8'))
 const NAMES = { intro: 'Intro', verse: 'Verse', pre: 'Pre-Chorus', chorus: 'Chorus', bridge: 'Bridge', outro: 'Outro' }
 const stamp = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`
 
@@ -36,7 +37,7 @@ for (const c of [{ name: 'Intro', t: 0 }, ...titled.map((s) => ({ name: s.name, 
   chapters.push(c)
 }
 // ...and the last one too must last 10 s before the song ends
-const { duration } = JSON.parse(readFileSync(`${ROOT}tracks/${o.track}/build/audio.json`, 'utf8'))
+const { duration } = JSON.parse(readFileSync(join(o.dir, 'build/audio.json'), 'utf8'))
 if (chapters.length > 3 && duration - chapters.at(-1).t < 10) chapters.pop()
 console.log('CHAPTERS')
 for (const c of chapters) console.log(`${stamp(c.t)} ${c.name}`)

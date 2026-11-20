@@ -1,10 +1,13 @@
 // Frame-accurate renderer: drives the engine with Playwright's fake clock,
 // screenshots every frame and pipes them into ffmpeg, in resumable chunks.
 //
-//   node tools/render.mjs --track <slug> [--format wide|vertical] [--res 1080p|4k]
-//        [--fps 30|60] [--quality draft|master|compat] [--range 48,92] [--highlight word|line]
-//        [--shard k/n] [--workers 3] [--stills 8,66] [--thumbnail hero,line,macro]
+//   node tools/render.mjs --track <slug> [--projects tracks] [--format wide|vertical]
+//        [--res hd|fhd|4k|8k] [--fps 30|60] [--quality draft|master|compat] [--range 48,92]
+//        [--highlight word|line|wipe|none] [--shard k/n] [--workers 3] [--stills 8,66]
+//        [--thumbnail hero,line,macro,promo] [--out out] [--no-build]
 //
+// The engine is built for this one project first (into <out>/dist-<slug>),
+// and the project folder is served next to it under /p/.
 // Without --shard everything is rendered and merged into out/<name>.mp4.
 // With --shard k/n only every n-th chunk (offset k) is rendered and left in
 // the chunks directory; tools/merge.mjs joins them (that is how the GitHub
@@ -15,7 +18,9 @@ import { existsSync } from 'node:fs'
 import { mkdir, readFile, rename } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { chromium } from 'playwright'
-import { COLOR, QUALITY, chunkFile, parseArgs, plan, scaleFactor, viewport } from './lib.mjs'
+import { build } from 'vite'
+import { MIME, serveProjects } from '../engine/vite/plugin.js'
+import { QUALITY, ROOT, chunkFile, color, parseArgs, plan, scaleFactor, viewport } from './lib.mjs'
 import { merge } from './merge.mjs'
 
 const WARMUP = 4 // seconds stepped through (not captured) before each chunk
@@ -23,16 +28,23 @@ const WARMUP = 4 // seconds stepped through (not captured) before each chunk
 const o = parseArgs()
 const q = QUALITY[o.quality]
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.woff2': 'font/woff2', '.woff': 'font/woff', '.jpg': 'image/jpeg', '.mp3': 'audio/mpeg' }
+if (o.build) {
+  Object.assign(process.env, { LMS_PROJECTS: o.projects, LMS_TRACK: o.track, LMS_DIST: o.dist })
+  await build({ configFile: join(ROOT, 'vite.config.js'), logLevel: 'warn' })
+}
+
+const projectFiles = serveProjects(o.projects)
 const server = createServer(async (req, res) => {
-  const path = join(o.dist, decodeURIComponent(new URL(req.url, 'http://x').pathname).replace(/\/$/, '/index.html'))
+  const pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname)
+  if (pathname.startsWith('/p/')) return projectFiles(Object.assign(req, { url: req.url.slice(2) }), res)
+  const path = join(o.dist, pathname.replace(/\/$/, '/index.html'))
   try {
     res.writeHead(200, { 'content-type': MIME[extname(path)] ?? 'application/octet-stream' }).end(await readFile(path))
   } catch {
     res.writeHead(404).end()
   }
 }).listen(0)
-const url = `http://127.0.0.1:${server.address().port}/index.html?render&track=${o.track}&format=${o.format}${o.highlight ? `&highlight=${o.highlight}` : ''}`
+const url = `http://127.0.0.1:${server.address().port}/index.html?render&track=${o.track}&format=${o.format}&dpr=${scaleFactor(o)}${o.highlight ? `&highlight=${o.highlight}` : ''}`
 
 const browser = await chromium.launch()
 
@@ -67,6 +79,8 @@ async function step(page, t) {
   await page.evaluate((t) => (window.__T = t), t)
   await page.clock.runFor(1000 / o.fps)
   await flush(page)
+  // blocks that load per frame (video frames, photos) are done drawing
+  await page.evaluate(() => window.__lms?.settled())
 }
 
 async function renderChunk(page, c) {
@@ -74,7 +88,7 @@ async function renderChunk(page, c) {
   for (let f = Math.max(0, from - WARMUP * o.fps); f < from; f++) await step(page, f / o.fps)
   const tmp = chunkFile(o, c).replace('.mp4', '.part.mp4')
   const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(o.fps), '-c:v', 'mjpeg', '-i', '-',
-    ...COLOR, ...q.codec, '-r', String(o.fps), tmp], { stdio: ['pipe', 'inherit', 'inherit'] })
+    ...color(o), ...q.codec, '-r', String(o.fps), tmp], { stdio: ['pipe', 'inherit', 'inherit'] })
   const closed = new Promise((r) => ff.on('close', r))
   for (let f = from; f < to; f++) {
     await step(page, f / o.fps)
@@ -90,9 +104,10 @@ await mkdir(o.out, { recursive: true })
 
 if (o.thumbnail) {
   // YouTube thumbnails: 1920x1080 JPEG (YouTube wants 16:9, under 2 MB);
-  // --format vertical makes 1080x1920 Shorts covers ("line" and "hero")
+  // --format vertical makes 1080x1920 Shorts covers
   for (const v of o.thumbnail) {
     const page = await browser.newPage({ viewport: viewport(o) })
+    page.on('pageerror', (e) => console.error('page error:', e.message))
     await page.goto(`${url}&thumbnail=${v}`)
     await page.waitForFunction(() => window.__ready === true, null, { timeout: 60_000 })
     const path = `${o.out}/${o.track}-thumbnail-${o.format === 'vertical' ? 'vertical-' : ''}${v}.jpg`
@@ -105,7 +120,7 @@ if (o.thumbnail) {
   for (const s of o.stills) {
     for (let t = Math.max(0, s - WARMUP); t < s; t += 1 / o.fps) await step(page, t)
     await step(page, s)
-    const path = `${o.out}/${o.track}-${o.format}-${s}.png`
+    const path = `${o.out}/${o.track}-${o.format}${o.res === 'fhd' ? '' : `-${o.res}`}-${s}.png`
     await page.screenshot({ path })
     console.log('still', path)
   }
