@@ -34,7 +34,10 @@ for (const f of files) {
   const [slug, ...rest] = relative(rel, f).split('/')
   if (rest.length) (bySlug[slug] ??= []).push(rest.join('/'))
 }
-const KEYS = (p) => JSON.stringify([p.audio, p.audioSha256, p.language, p.lyrics?.file, p.lyrics?.timing, p.lyrics?.whisperModel, p.media])
+// a file moved (e.g. to R2) with the same sha256 is the same file
+const id = (src, sha) => sha || src
+const media = (m = {}) => Object.fromEntries(Object.entries(m).map(([k, v]) => [k, id(v.src, v.sha256)]))
+const KEYS = (p) => JSON.stringify([id(p.audio, p.audioSha256), p.language, p.lyrics?.file, p.lyrics?.timing, p.lyrics?.whisperModel, media(p.media)])
 const read = (rev, path) => {
   try {
     return JSON.parse(git('show', `${rev}:${path}`))

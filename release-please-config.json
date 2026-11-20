@@ -9,11 +9,30 @@
       "include-component-in-tag": false,
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
-        { "type": "generic", "path": ".github/workflows/render.yml" },
-        { "type": "generic", "path": ".github/workflows/prepare.yml" },
-        { "type": "generic", "path": ".github/workflows/deliver.yml" },
-        { "type": "generic", "path": "README.md" },
-        { "type": "generic", "path": "engine/src/lib/config.js" }
+        {
+          "type": "generic",
+          "path": ".github/workflows/render.yml"
+        },
+        {
+          "type": "generic",
+          "path": ".github/workflows/prepare.yml"
+        },
+        {
+          "type": "generic",
+          "path": ".github/workflows/deliver.yml"
+        },
+        {
+          "type": "generic",
+          "path": ".github/workflows/media.yml"
+        },
+        {
+          "type": "generic",
+          "path": "README.md"
+        },
+        {
+          "type": "generic",
+          "path": "engine/src/lib/config.js"
+        }
       ]
     }
   }

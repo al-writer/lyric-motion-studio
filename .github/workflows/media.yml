@@ -1,0 +1,47 @@
+name: Move media to R2
+
+# Reusable: uploads every song and footage file of a project (or of all
+# projects) that is not in R2 yet (files in the repository or URLs), points
+# project.json at r2://projects/<slug>/…, deletes the files that were in the
+# repository, and commits. The sha256 stays the same, so nothing is prepared
+# again.
+on:
+  workflow_call:
+    inputs:
+      track: { type: string, default: '', description: "Project to move (empty: all)" }
+      projects: { type: string, default: tracks, description: "Projects directory in the caller's repository" }
+      image: { type: string, default: '', description: "Studio image override (default: this version's)" }
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    container:
+      image: ${{ inputs.image || 'ghcr.io/al-writer/lyric-motion-studio/render:v0.9.0' }} # x-release-please-version
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+    steps:
+      - name: R2 configured
+        run: '[ -n "$R2_BUCKET" ] || { echo "::error::set the R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY and R2_BUCKET secrets first"; exit 1; }'
+      - uses: actions/checkout@v5
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Move
+        env:
+          TRACK: ${{ inputs.track }}
+        run: |
+          if [ -n "$TRACK" ]; then node /studio/tools/media.mjs migrate --projects "${{ inputs.projects }}" --track "$TRACK"
+          else node /studio/tools/media.mjs migrate --projects "${{ inputs.projects }}" --all; fi
+      - name: Commit
+        env:
+          TRACK: ${{ inputs.track }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A "${{ inputs.projects }}"
+          git diff --cached --quiet && { echo "nothing to move"; exit 0; }
+          git commit -m "chore(${TRACK:-media}): move media to r2"
+          git push

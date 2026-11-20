@@ -7,11 +7,14 @@
 //   node tools/media.mjs push --track <slug> --file <path> [--as audio|<id>] [--key <r2 key>]
 //        uploads a file to R2 (default key projects/<slug>/<file name>) and points
 //        project.json at it: "audio" or "media.<id>" = { src: "r2://…", sha256 }
+//   node tools/media.mjs migrate --track <slug>|--all
+//        moves every audio / media source that is not in R2 yet (a file in the
+//        project or a URL) there; files that were in the project are deleted
 //
 // R2 needs R2_ACCOUNT_ID, R2_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { createReadStream, createWriteStream, existsSync, mkdirSync, renameSync, writeFileSync } from 'node:fs'
+import { createReadStream, createWriteStream, existsSync, mkdirSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
 import { basename, dirname, extname, join } from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
@@ -87,6 +90,22 @@ export async function fetchMedia(dir, { only = null, quiet = false } = {}) {
   return info
 }
 
+/** moves the project's non-R2 sources to R2; returns the ids moved */
+async function migrate(dir, slug) {
+  const project = readProject(dir)
+  const moved = []
+  for (const m of items(project)) {
+    if (m.src.startsWith('r2://')) continue
+    await fetchMedia(dir, { only: [m.id], quiet: true })
+    const file = join(dir, mediaPath(m.id, m.src))
+    const name = basename(m.src.split('?')[0])
+    await push(dir, slug, file, m.id, `projects/${slug}/${m.id === 'audio' ? name : `${m.id}-${name}`}`)
+    if (!isRemote(m.src)) execFileSync('rm', [file]) // the copy in .media/ stays for local use
+    moved.push(m.id)
+  }
+  return moved
+}
+
 async function push(dir, slug, file, as, key) {
   const r2 = await import('./r2.mjs')
   const project = readProject(dir)
@@ -108,8 +127,17 @@ async function push(dir, slug, file, as, key) {
 const main = async () => {
   const { positionals: [cmd], values: o } = parseArgs({
     allowPositionals: true,
-    options: { track: { type: 'string' }, projects: { type: 'string' }, only: { type: 'string' }, file: { type: 'string' }, as: { type: 'string' }, key: { type: 'string' } },
+    options: { track: { type: 'string' }, all: { type: 'boolean' }, projects: { type: 'string' }, only: { type: 'string' }, file: { type: 'string' }, as: { type: 'string' }, key: { type: 'string' } },
   })
+  if (cmd === 'migrate') {
+    const root = projectsDir(o)
+    const slugs = o.all ? readdirSync(root).filter((d) => existsSync(join(root, d, 'project.json'))) : [o.track]
+    for (const slug of slugs) {
+      const moved = await migrate(join(root, slug), slug)
+      console.log(moved.length ? `${slug}: moved ${moved.join(', ')} to R2` : `${slug}: already in R2`)
+    }
+    return
+  }
   if (!o.track) throw new Error('--track <slug> is required')
   const dir = join(projectsDir(o), o.track)
   if (cmd === 'fetch') {
@@ -118,7 +146,7 @@ const main = async () => {
   } else if (cmd === 'push') {
     if (!o.file) throw new Error('--file is required')
     await push(dir, o.track, o.file, o.as ?? (/\.(mp3|wav|flac|m4a|ogg)$/i.test(extname(o.file)) ? 'audio' : basename(o.file, extname(o.file))), o.key)
-  } else throw new Error('usage: media.mjs fetch|push --track <slug> …')
+  } else throw new Error('usage: media.mjs fetch|push|migrate --track <slug> …')
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) await main()

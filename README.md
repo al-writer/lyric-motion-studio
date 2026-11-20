@@ -186,6 +186,7 @@ jobs:
 | `prepare.yml` | on pushes to projects: Whisper / LRC timing, audio analysis, media probe; commits `build/` back. Only what changed is redone (`tools/changed.mjs`): a colour change runs nothing, `timing.json` only re-applies fixes |
 | `render.yml` | shards over up to 20 machines per format, merges, puts the videos into a **draft release** (and R2 / Google Drive when configured), removes every chunk afterwards, even when a job fails |
 | `deliver.yml` | puts a render run's video artifacts into a draft release again |
+| `media.yml` | moves songs and footage that are not in R2 yet (files or URLs) to R2 and commits the new `project.json` |
 
 Secrets in the project repository: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
 `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (chunks, videos and media in R2), and
