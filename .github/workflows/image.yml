@@ -28,6 +28,11 @@ permissions:
   contents: read
   packages: write
 
+# a newer push to the same branch replaces an older build, never the other way round
+concurrency:
+  group: image-${{ github.ref }}-${{ inputs.tags || 'branch' }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
