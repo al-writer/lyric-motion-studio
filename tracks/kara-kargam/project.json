@@ -1,0 +1,113 @@
+{
+  "$schema": "../../schema/project.schema.json",
+  "studio": "^1",
+  "title": "Қара, қарғам!",
+  "artist": "Qubit Quill",
+  "language": "kk",
+  "audio": "song.flac",
+  "lyrics": {
+    "file": "lyrics.lrc",
+    "timing": "lrc",
+    "emphasis": [
+      "^Қара, қарғам\\.\\.\\.$",
+      "^Қара, қара, қара, қарғам",
+      "^Қарт қарға қарқылдады"
+    ],
+    "pop": [
+      "^Қара, қарғам!",
+      "^қараңғыда қардағы",
+      "^қарама-қарсы",
+      "^қарқылдап"
+    ],
+    "italicSections": [
+      "intro",
+      "outro"
+    ]
+  },
+  "fonts": {
+    "body": "Lora Variable",
+    "display": "Rubik Variable",
+    "hand": "Caveat"
+  },
+  "colors": {
+    "text": "#eef3ff",
+    "accent": "#ffc25a",
+    "accentSoft": "#ffe2a8",
+    "glow": "255,196,110",
+    "mote": "#e6eeff"
+  },
+  "palette": {
+    "intro": {
+      "base": "#050916",
+      "glow": "rgba(80,120,240,0.20)",
+      "glow2": "rgba(255,190,110,0.10)"
+    },
+    "verse": {
+      "base": "#060b1b",
+      "glow": "rgba(70,110,220,0.24)",
+      "glow2": "rgba(255,180,90,0.12)"
+    },
+    "chorus": {
+      "base": "#0c0920",
+      "glow": "rgba(255,170,70,0.28)",
+      "glow2": "rgba(120,90,255,0.26)"
+    },
+    "bridge": {
+      "base": "#03121a",
+      "glow": "rgba(60,230,170,0.20)",
+      "glow2": "rgba(130,90,255,0.22)"
+    },
+    "outro": {
+      "base": "#070a19",
+      "glow": "rgba(255,190,110,0.20)",
+      "glow2": "rgba(80,120,230,0.18)"
+    }
+  },
+  "template": "illustrated",
+  "scene": {
+    "fade": {
+      "in": 1.2,
+      "out": 2.0
+    },
+    "backdrop": {
+      "component": "Night.jsx"
+    },
+    "hero": {
+      "component": "Crows.jsx",
+      "size": [
+        900,
+        450
+      ],
+      "poster": 48
+    },
+    "acts": [
+      {
+        "from": "bridge",
+        "hero": "center",
+        "lyrics": "caption"
+      }
+    ],
+    "reactive": {
+      "dots": false,
+      "motes": false,
+      "glow": true,
+      "tilt": true,
+      "rings": [
+        "chorus"
+      ]
+    }
+  },
+  "thumbnails": {
+    "tag": "Lyric video",
+    "line": "Қара, қарғам!",
+    "highlight": "қарғам!",
+    "t": 46
+  },
+  "promo": {
+    "hook": "Жаңылтпашты қайталап көр!",
+    "highlight": [
+      "жаңылтпашты"
+    ],
+    "badge": "Жаңа ән"
+  }
+}

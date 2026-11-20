@@ -6,7 +6,7 @@
 //   frost creeping in from the corners ("аяз қатты")
 // Pure function of t: snow positions use the integral of the energy curve.
 
-import { rng } from '../../../engine/src/clock.js'
+import { rng } from 'lms'
 
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 const ease = (v) => {

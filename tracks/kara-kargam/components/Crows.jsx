@@ -133,11 +133,11 @@ const RIGHT = [690, 266] // opposite hill
 const BESIDE = [392, 336] // where the second crow ends up
 const K = 1.45 // crow size in the diorama
 
-export default function Crows({ scene, t, track, poster = false }) {
+export default function Crows({ cfg, t, track, poster = false }) {
   const { features } = track ?? {}
   const f = features ? features(t) : { bass: 0, energy: 0, high: 0 }
   const c = track ? cues(track) : null
-  const accent = scene.colors.accent
+  const accent = cfg.colors.accent
 
   // --- old crow
   const lookK = c ? ramp(t, c.look - 0.5, c.look + 0.3) : 1
@@ -222,10 +222,10 @@ export default function Crows({ scene, t, track, poster = false }) {
       {/* title card, only on the intro and the very end */}
       {titleK > 0.01 && (
         <g opacity={titleK} transform={`translate(450 ${92 - 10 * (1 - titleK)})`}>
-          <text textAnchor="middle" fontFamily={`'${scene.fonts.display}', sans-serif`} fontWeight="800" fontSize="78" fill={scene.colors.text} letterSpacing="2">
+          <text textAnchor="middle" fontFamily={`'${cfg.fonts.display}', sans-serif`} fontWeight="800" fontSize="78" fill={cfg.colors.text} letterSpacing="2">
             ҚАРА, ҚАРҒАМ!
           </text>
-          <text y="44" textAnchor="middle" fontFamily={`'${scene.fonts.body}', serif`} fontStyle="italic" fontSize="26" fill={accent} opacity="0.9">
+          <text y="44" textAnchor="middle" fontFamily={`'${cfg.fonts.body}', serif`} fontStyle="italic" fontSize="26" fill={accent} opacity="0.9">
             Қаңтар · Қарағанды
           </text>
         </g>
@@ -286,7 +286,7 @@ export default function Crows({ scene, t, track, poster = false }) {
           if (k < 0 || k > 1) return null
           return (
             <g key={o} transform={`translate(${LEFT[0] + K * (100 + 30 * k)} ${LEFT[1] - K * (110 + 40 * k)}) rotate(-8) scale(${0.7 + 0.5 * Math.min(1, k * 5)})`} opacity={1 - k ** 2}>
-              <text textAnchor="middle" fontFamily={`'${scene.fonts.display}', sans-serif`} fontWeight="900" fontSize="40" fill={accent} stroke="#10131f" strokeWidth="6" paintOrder="stroke">
+              <text textAnchor="middle" fontFamily={`'${cfg.fonts.display}', sans-serif`} fontWeight="900" fontSize="40" fill={accent} stroke="#10131f" strokeWidth="6" paintOrder="stroke">
                 ҚАР!
               </text>
             </g>
