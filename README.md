@@ -50,6 +50,7 @@ set `"timing": "lrc"`. Words without their own `<mm:ss>` tag are spread by sylla
 | `backdrop` | `{ "file": "X.jsx" }`: the track's own full-stage scenery behind the hero, gets `{ track, t, section, cur }` (e.g. `tracks/kara-kargam/scene/Night.jsx`). Hero components get the same props |
 | `colors` | `text`, `accent`, `accentSoft`, plus `glow` (`"r,g,b"` of every halo) and `mote` |
 | `finale` | `{ "from": "bridge" }`: once that section starts the hero stays centred and the remaining lines are shown one at a time, smaller, above it |
+| `highlight` | `word` (default): karaoke, each word lights up as it is sung · `line`: a plain lyric video, the whole current line lights up at once. Can also be chosen per render (`--highlight line`, or *highlight* in the Render video workflow); those videos get a `-lines` suffix |
 | `emphasis` / `pop` | regexes over a line's text: emphasised lines use the display font and accent colour; pop lines spring word by word |
 | `palette` | per-section background: `{ "chorus": { "base": "#250d12", "glow": "rgba(…)", "glow2": "rgba(…)" } }` for `intro`, `verse`, `pre`, `chorus`, `bridge`, `outro` |
 | `fonts` | `body`, `display`, `hand`: bundled are Fraunces Variable, Inter Variable, Space Mono, Caveat, and for Cyrillic incl. Kazakh: Lora Variable, Rubik Variable (also Inter, Caveat) |

@@ -3,9 +3,11 @@
 //   &format=wide|vertical  16:9 (default) or 9:16
 //   &render                driven frame by frame by tools/render.mjs
 //   &thumbnail=<variant>   a still YouTube thumbnail instead of the video (see Thumbnail.jsx)
+//   &highlight=word|line   overrides scene.json "highlight" (karaoke or plain lyric video)
 const q = new URLSearchParams(location.search)
 
 export const TRACK = q.get('track')
 export const RENDER = q.has('render')
 export const VERTICAL = q.get('format') === 'vertical'
 export const THUMBNAIL = q.get('thumbnail')
+export const HIGHLIGHT = q.get('highlight')

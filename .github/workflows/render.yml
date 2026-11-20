@@ -33,6 +33,11 @@ on:
         type: choice
         options: [master, compat, draft]
         default: master
+      highlight:
+        description: word = karaoke (each word lights up) · line = plain lyric video (the whole line) · scene = as in scene.json
+        type: choice
+        options: [scene, word, line]
+        default: scene
       range:
         description: Only part of the song, in seconds, e.g. 48,92 (empty = whole song)
         required: false
@@ -52,6 +57,7 @@ env:
   HAS_R2: ${{ secrets.R2_BUCKET != '' && 'true' || 'false' }}
   HAS_DRIVE: ${{ secrets.RCLONE_CONF != '' && 'true' || 'false' }}
   RANGE_ARG: ${{ inputs.range != '' && format('--range {0}', inputs.range) || '' }}
+  HIGHLIGHT_ARG: ${{ inputs.highlight != 'scene' && inputs.highlight != '' && format('--highlight {0}', inputs.highlight) || '' }}
 
 jobs:
   plan:
@@ -101,7 +107,7 @@ jobs:
         run: >
           node tools/render.mjs --track "${{ inputs.track }}" --format ${{ matrix.format }}
           --res ${{ inputs.res }} --fps ${{ inputs.fps }} --quality ${{ inputs.quality }}
-          --shard ${{ matrix.shard }} --workers 3 --chunks-dir out/chunks $RANGE_ARG
+          --shard ${{ matrix.shard }} --workers 3 --chunks-dir out/chunks $RANGE_ARG $HIGHLIGHT_ARG
       - name: Upload chunks to R2
         if: env.HAS_R2 == 'true'
         run: node tools/r2.mjs put out/chunks "runs/${{ github.run_id }}/${{ matrix.format }}"
@@ -151,7 +157,7 @@ jobs:
         run: |
           node tools/merge.mjs --track "${{ inputs.track }}" --format ${{ matrix.format }} \
             --res ${{ inputs.res }} --fps ${{ inputs.fps }} --quality ${{ inputs.quality }} \
-            --chunks-dir out/chunks $RANGE_ARG
+            --chunks-dir out/chunks $RANGE_ARG $HIGHLIGHT_ARG
           file=$(ls out/*.mp4)
           echo "file=$file" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$file")" >> "$GITHUB_OUTPUT"

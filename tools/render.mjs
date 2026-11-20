@@ -2,7 +2,7 @@
 // screenshots every frame and pipes them into ffmpeg, in resumable chunks.
 //
 //   node tools/render.mjs --track <slug> [--format wide|vertical] [--res 1080p|4k]
-//        [--fps 30|60] [--quality draft|master|compat] [--range 48,92]
+//        [--fps 30|60] [--quality draft|master|compat] [--range 48,92] [--highlight word|line]
 //        [--shard k/n] [--workers 3] [--stills 8,66] [--thumbnail hero,line,macro]
 //
 // Without --shard everything is rendered and merged into out/<name>.mp4.
@@ -32,7 +32,7 @@ const server = createServer(async (req, res) => {
     res.writeHead(404).end()
   }
 }).listen(0)
-const url = `http://127.0.0.1:${server.address().port}/index.html?render&track=${o.track}&format=${o.format}`
+const url = `http://127.0.0.1:${server.address().port}/index.html?render&track=${o.track}&format=${o.format}${o.highlight ? `&highlight=${o.highlight}` : ''}`
 
 const browser = await chromium.launch()
 
