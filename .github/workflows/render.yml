@@ -40,6 +40,11 @@ env:
     ${{ inputs.range != '' && format('--range {0}', inputs.range) || '' }}
     ${{ inputs.highlight != 'project' && inputs.highlight != '' && format('--highlight {0}', inputs.highlight) || '' }}
 
+# jobs run in the studio image, whose default shell would be sh
+defaults:
+  run:
+    shell: bash
+
 jobs:
   plan:
     runs-on: ubuntu-latest

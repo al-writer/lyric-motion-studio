@@ -10,6 +10,11 @@ on:
       title: { type: string, default: '' }
       image: { type: string, default: '', description: "Studio image override (default: this version's)" }
 
+# jobs run in the studio image, whose default shell would be sh
+defaults:
+  run:
+    shell: bash
+
 jobs:
   deliver:
     runs-on: ubuntu-latest

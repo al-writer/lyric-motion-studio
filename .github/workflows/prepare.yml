@@ -22,6 +22,11 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
 
+# jobs run in the studio image, whose default shell would be sh
+defaults:
+  run:
+    shell: bash
+
 jobs:
   prepare:
     runs-on: ubuntu-latest

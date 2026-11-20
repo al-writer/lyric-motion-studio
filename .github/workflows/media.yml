@@ -12,6 +12,11 @@ on:
       projects: { type: string, default: tracks, description: "Projects directory in the caller's repository" }
       image: { type: string, default: '', description: "Studio image override (default: this version's)" }
 
+# jobs run in the studio image, whose default shell would be sh
+defaults:
+  run:
+    shell: bash
+
 jobs:
   migrate:
     runs-on: ubuntu-latest
